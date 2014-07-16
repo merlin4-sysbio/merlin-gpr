@@ -1,0 +1,110 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.17+ wizard for JavaCC 1.5.0+
+ */options{  JDK_VERSION = "1.7";  static = false;}PARSER_BEGIN(KEGGOrthologyParser)package grammar;
+
+import java.util.List;
+import java.util.ArrayList;
+
+import grammar.AuxUtilities;
+
+//@SuppressWarnings("unused")
+public class KEGGOrthologyParser{
+  public static boolean VERBOSE = false;}PARSER_END(KEGGOrthologyParser)SKIP :{  " "| "\r"| "\t"| "\n"
+| "--"}TOKEN : /* OPERATORS */{  < PLUS : "+" >| < MINUS : "-" >}TOKEN :{
+  < ID : ["A"-"Z"](["0"-"9"])* >}List<List<String >> parseDefinition() :{
+  List<List<String >> aux;
+  List<List<String >> ret = new ArrayList<List<String >>();
+}{
+  (
+    (",")*    aux = DEF_ELEMENT()
+    {
+        if (VERBOSE) System.out.println("DEF_ELEMENT: " + aux);
+		ret.addAll(aux);
+    }
+    
+  )+
+  < EOF >
+  {
+	return ret;
+  }}
+
+List<List<String >> DEF_ELEMENT() :
+{
+  String op;
+  List<List<String >> aux;
+  List<List<String >> ret = null;}
+{
+  (    ret = EXPR()
+    ( op = OP() aux = EXPR()    	{
+    	  if (VERBOSE) {    	    System.out.println(ret);
+    	    System.out.println(op);
+    	  	System.out.println(aux);
+    	  }
+    	  ret = AuxUtilities.cartStringConcatProd2(ret, aux, op);    	}
+    )*
+  )
+  {
+    return ret;  }}
+
+String OP() :
+{
+  Token op; 
+}{
+  ( op = < PLUS > | op = < MINUS > )
+  {	return op.toString();
+  }
+}
+List<List<String >> EXPR() :
+{
+  List<List<String >> ret = null;
+  String termId = null;
+}
+{
+  termId = TERMINAL_ID()  {
+    ret = new ArrayList<List<String >>();
+	List<String > singleTon = new ArrayList<String >();
+	singleTon.add(termId);
+	ret.add(singleTon);
+    return ret;  }
+  | "(" ret = EXPR_ELEMENTS() ")"  {
+    return ret;  }
+}
+
+List<List<String >> EXPR_ELEMENTS() :
+{
+	List<List<String >> ret = new ArrayList<List<String >> ();
+	List<List<String >> elemSet = null;
+	List<List<String >> aux = null;
+}
+{
+  //"(" (DEF_ELEMENT())+ ")"
+  (    elemSet = DEF_ELEMENT() ("," aux = DEF_ELEMENT()    {
+      elemSet = AuxUtilities.cartesianProduct(elemSet, aux);
+      if (VERBOSE) System.out.println("ELEMSET:" + elemSet);
+      
+       //List<List<List<String >>> prod = new ArrayList<List<List<String >>> ();
+       //List<List<String >> last = 
+       //prod.add()
+       //List<String >  = ret.get( ret.size() - 1);
+       //AuxUtilities.cartProd();
+    }       | aux = DEF_ELEMENT()    {
+      ret.addAll(elemSet);
+      elemSet.clear();
+      elemSet.addAll(aux);    })*
+  )
+  {
+    if ( !elemSet.isEmpty()) ret.addAll(elemSet);
+    if (VERBOSE) System.out.println("EXPR_ELEMENTS:" + ret);	return ret;
+  }
+}
+
+String TERMINAL_ID() :
+{
+  Token id;
+}
+{
+  id = < ID >
+  {
+    return id.toString();
+  }
+}

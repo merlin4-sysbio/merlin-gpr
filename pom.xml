@@ -1,0 +1,59 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>pt.uminho.sysbio.merlin</groupId>
+	<artifactId>merlin-gpr</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
+		<pt.uminho.sysbio.version>0.0.1-SNAPSHOT</pt.uminho.sysbio.version>
+	</properties>
+
+	<!-- <build> <sourceDirectory>D:\workspaces\maven\gpr-rules\src</sourceDirectory> 
+		<scriptSourceDirectory>D:\workspaces\maven\gpr-rules\src\main\scripts</scriptSourceDirectory> 
+		<testSourceDirectory>D:\workspaces\maven\gpr-rules\test</testSourceDirectory> 
+		<outputDirectory>D:\workspaces\maven\gpr-rules\bin\</outputDirectory> <testOutputDirectory>D:\workspaces\maven\gpr-rules\test-bin</testOutputDirectory> 
+		</build> -->
+	<build>
+	   <plugins>
+		<plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-surefire-plugin</artifactId>
+			<version>2.17</version>
+	        <configuration>
+	          <skipTests>true</skipTests>
+	        </configuration>
+	     </plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>pt.uminho.sysbio.merlin</groupId>
+			<artifactId>database-connector</artifactId>
+			<version>${pt.uminho.sysbio.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>pt.uminho.sysbio.merlin</groupId>
+			<artifactId>merlin-utilities</artifactId>
+			<version>${pt.uminho.sysbio.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>pt.uminho.sysbio.common</groupId>
+			<artifactId>utilities</artifactId>
+			<version>${pt.uminho.sysbio.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>pt.uminho.sysbio.common</groupId>
+			<artifactId>local-alignments</artifactId>
+			<version>${pt.uminho.sysbio.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>pt.uminho.sysbio.common</groupId>
+			<artifactId>bioapis</artifactId>
+			<version>${pt.uminho.sysbio.version}</version>
+		</dependency>
+	</dependencies>
+</project>
