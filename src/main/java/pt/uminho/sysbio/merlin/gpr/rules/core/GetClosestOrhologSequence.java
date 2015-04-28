@@ -23,21 +23,20 @@ public class GetClosestOrhologSequence {
 	private ConcurrentHashMap<String, Map<String, List<String>>> orthologsSequences;
 
 	/**
-	 * 
-	 * 
 	 * @param ko
 	 * @param referenceTaxonomy
 	 * @param sequences
 	 * @param kegg_taxonomy_ids
 	 * @param ncbi_taxonomy_ids
-	 * @param kegg_taxonomy_scores 
+	 * @param kegg_taxonomy_scores
 	 * @param closestOrtholog
-	 * @param orthologsSequences 
-	 * @throws Exception 
+	 * @param orthologsSequences
+	 * @throws Exception
 	 */
 	public GetClosestOrhologSequence(String ko, List<String> referenceTaxonomy, ConcurrentHashMap<String, ProteinSequence> sequences,
 			Map<String, String> kegg_taxonomy_ids, ConcurrentHashMap<String, Integer> ncbi_taxonomy_ids,
-			ConcurrentHashMap<String, Integer> kegg_taxonomy_scores, ConcurrentHashMap<String, Set<String>> closestOrtholog, ConcurrentHashMap<String,Map<String,List<String>>> orthologsSequences) throws Exception {
+			ConcurrentHashMap<String, Integer> kegg_taxonomy_scores, ConcurrentHashMap<String, Set<String>> closestOrtholog, 
+			ConcurrentHashMap<String,Map<String,List<String>>> orthologsSequences) throws Exception {
 
 		this.setKo(ko);
 		this.setSequences(sequences);
@@ -97,7 +96,8 @@ public class GetClosestOrhologSequence {
 	 */
 	private Set<String> getGenesForOrtholog() throws Exception {
 
-		String[] findGenes = KeggAPI.findGenes(ko);
+		String[] findGenes = KeggAPI.findGenes(ko.trim());
+
 		ConcurrentLinkedQueue<String> genes = new ConcurrentLinkedQueue<>();
 
 		for(String gene : findGenes) {
@@ -117,27 +117,32 @@ public class GetClosestOrhologSequence {
 
 			String[] orgGenes = gene.split(":");
 
-			int score = this.ncbi_taxonomy_ids.get(this.kegg_taxonomy_ids.get(orgGenes[0]));
+			String geneOrg = this.kegg_taxonomy_ids.get(orgGenes[0]);
 
-			if(this.getMaxScore(score, maxScore)) {
-				
-				Map<String, List<String>> geneSequence = KeggAPI.getGenesByID(gene);
+			if(geneOrg!= null && this.ncbi_taxonomy_ids.containsKey(geneOrg)) {
 
-				if(geneSequence!=null) {
-					
-					gene_id = new HashSet<>();
+				int score = this.ncbi_taxonomy_ids.get(geneOrg);
+
+				if(this.getMaxScore(score, maxScore)) {
+
+					Map<String, List<String>> geneSequence = KeggAPI.getGenesByID(gene);
+
+					if(geneSequence!=null) {
+
+						gene_id = new HashSet<>();
+						maxScore = score;
+						maxOrg = orgGenes[0];
+						gene_id.add(gene);
+						this.orthologsSequences.put(gene, geneSequence);
+					}
+				}
+				else if(maxOrg.equalsIgnoreCase(orgGenes[0])) {
+
+					Map<String, List<String>> geneSequence = KeggAPI.getGenesByID(gene);
 					maxScore = score;
-					maxOrg = orgGenes[0];
 					gene_id.add(gene);
 					this.orthologsSequences.put(gene, geneSequence);
 				}
-			}
-			else if(maxOrg.equalsIgnoreCase(orgGenes[0])) {
-
-				Map<String, List<String>> geneSequence = KeggAPI.getGenesByID(gene);
-				maxScore = score;
-				gene_id.add(gene);
-				this.orthologsSequences.put(gene, geneSequence);
 			}
 		}
 

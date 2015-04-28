@@ -51,10 +51,8 @@ public class SelectClosestOrtholog //implements Runnable
 
 		List<String> genesOrg  = new ArrayList<>();
 
-		for(String gene : this.genes) {
-
+		for(String gene : this.genes)
 			genesOrg.add(this.kegg_taxonomy_ids.get(gene.split(":")[0]));
-		}
 
 		this.processTaxIds(genesOrg);
 	}
@@ -77,26 +75,24 @@ public class SelectClosestOrtholog //implements Runnable
 
 				int score = -1;
 
-				if(ncbi_ids.get(tax_id)!= null) {
+				if(ncbi_ids.containsKey(tax_id)) {
 
 					String[] taxonomy = ncbi_ids.get(tax_id)[1].split(";");
 
 					List<String> match = new ArrayList<>();
-					for(String t : taxonomy) {
-
+					
+					for(String t : taxonomy)
 						match.add(t.trim());
-					}
 
 					match.add(ncbi_ids.get(tax_id)[0].trim());
 					match.retainAll(this.referenceTaxonomy);
 
 					score = match.size();
-				}
-				this.ncbi_taxonomy_ids.put(tax_id, score);
-				
-				for(String org : this.kegg_taxonomy_reverse.get(tax_id)) {
-					
-					this.kegg_taxonomy_scores.put(org, score);
+
+					this.ncbi_taxonomy_ids.put(tax_id, score);
+
+					for(String org : this.kegg_taxonomy_reverse.get(tax_id))					
+						this.kegg_taxonomy_scores.put(org, score);
 				}
 			}
 		}

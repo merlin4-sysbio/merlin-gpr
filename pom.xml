@@ -50,10 +50,10 @@
 			<artifactId>local-alignments</artifactId>
 			<version>${pt.uminho.sysbio.version}</version>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>pt.uminho.sysbio.common</groupId>
 			<artifactId>bioapis</artifactId>
 			<version>${pt.uminho.sysbio.version}</version>
-		</dependency>
+		</dependency>-->
 	</dependencies>
 </project>

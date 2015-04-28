@@ -27,6 +27,7 @@ import pt.uminho.sysbio.common.bioapis.externalAPI.ncbi.NcbiAPI;
 import pt.uminho.sysbio.common.database.connector.datatypes.MySQLMultiThread;
 import pt.uminho.sysbio.common.local.alignments.core.PairwiseSequenceAlignement;
 import pt.uminho.sysbio.common.local.alignments.core.Run_Similarity_Search;
+import pt.uminho.sysbio.common.local.alignments.core.PairwiseSequenceAlignement.ThresholdType;
 import pt.uminho.sysbio.common.local.alignments.core.Run_Similarity_Search.Method;
 import pt.uminho.sysbio.common.utilities.datastructures.map.MapUtils;
 import pt.uminho.sysbio.common.utilities.datastructures.pair.Pair;
@@ -108,7 +109,7 @@ public class IdentifyGenomeSubunits {
 			this.sequences = new ConcurrentHashMap<>();
 			this.closestOrtholog = new ConcurrentHashMap<>();
 
-			List<String> referenceTaxonomy = this.getReferenceTaxonomy(reference_organism_id);
+			List<String> referenceTaxonomy = IdentifyGenomeSubunits.getReferenceTaxonomy(reference_organism_id);
 			System.out.println("Reference taxonomy set to "+ referenceTaxonomy);
 
 			ConcurrentHashMap<String, Integer> ncbi_taxonomy_ids = new ConcurrentHashMap<>();
@@ -116,7 +117,7 @@ public class IdentifyGenomeSubunits {
 			ConcurrentHashMap<String, Map<String, List<String>>> orthologsSequences = new ConcurrentHashMap<>();;
 
 			kegg_taxonomy_scores.put("noOrg", 0);
-			Map<String, String> kegg_taxonomy_ids = this.getKeggTaxonomyIDs();
+			Map<String, String> kegg_taxonomy_ids = IdentifyGenomeSubunits.getKeggTaxonomyIDs();
 
 			Connection conn = this.msqlmt.openConnection();
 
@@ -143,7 +144,7 @@ public class IdentifyGenomeSubunits {
 						Map<String,List<ReactionProteinGeneAssociation>> result = gpr.run();
 						System.out.println("Retrieved!");
 
-						Map<String, Set<String>> genes_ko_modules = this.loadModule(conn, result);
+						Map<String, Set<String>> genes_ko_modules = IdentifyGenomeSubunits.loadModule(conn, result);
 						System.out.println("Genes, KO, modules\t"+genes_ko_modules);
 
 						ConcurrentHashMap<String, ProteinSequence> orthologs = new ConcurrentHashMap<>();
@@ -174,7 +175,7 @@ public class IdentifyGenomeSubunits {
 							}
 							else {
 
-								Map<String, Set<String>> temp = this.getOrthologs(ko);
+								Map<String, Set<String>> temp = IdentifyGenomeSubunits.getOrthologs(ko,this.msqlmt.openConnection());
 
 								for(String key : temp.keySet()) {
 
@@ -199,7 +200,7 @@ public class IdentifyGenomeSubunits {
 						if(orthologs.size()>0 && !this.cancel.get()) {
 
 							Run_Similarity_Search search = new Run_Similarity_Search(this.msqlmt, this.genome, this.similarity_threshold, 
-									this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(this.ec_numbers.size()), -1);
+									this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(this.ec_numbers.size()), -1, ThresholdType.ALIGNMENT);
 							search.setEc_number(ec_number);
 							search.setModules(genes_ko_modules);
 							search.setClosestOrthologs(MapUtils.revertMapFromSet(this.closestOrtholog));
@@ -257,14 +258,13 @@ public class IdentifyGenomeSubunits {
 	 * @return
 	 * @throws SQLException
 	 */
-	private Map<String, Set<String>> getOrthologs(String ko) throws SQLException {
+	public static Map<String, Set<String>> getOrthologs(String ko, Connection conn) throws SQLException {
 
 		Map<String, Set<String>> ret = new HashMap<>();
 		Set<String> ret_set = new HashSet<>();
 
 		ret_set.add(ko);
 
-		Connection conn = this.msqlmt.openConnection();
 		Statement stmt = conn.createStatement();
 
 		ResultSet rs = stmt.executeQuery("SELECT locus_id FROM orthology where entry_id = '"+ko+"'");
@@ -275,7 +275,7 @@ public class IdentifyGenomeSubunits {
 				ret.put(" :"+rs.getString(1), ret_set);
 		}
 
-		this.msqlmt.closeConnection(conn);
+		conn.close();;
 		return ret;
 	}
 
@@ -355,7 +355,7 @@ public class IdentifyGenomeSubunits {
 	 * @param result
 	 * @throws SQLException
 	 */
-	private Map<String, Set<String>> loadModule(Connection conn, Map<String, List<ReactionProteinGeneAssociation>> result) throws SQLException {
+	public static Map<String, Set<String>> loadModule(Connection conn, Map<String, List<ReactionProteinGeneAssociation>> result) throws SQLException {
 
 		Map<String, Set<String>> genes_ko_modules = new HashMap<>();
 
@@ -462,7 +462,7 @@ public class IdentifyGenomeSubunits {
 	 * @return
 	 * @throws Exception 
 	 */
-	private Map<String, String> getKeggTaxonomyIDs() throws Exception {
+	public static Map<String, String> getKeggTaxonomyIDs() throws Exception {
 
 		Map<String, String> kegg_taxonomy_ids = new HashMap<>();
 		List<String[]> organisms = KeggAPI.getGenomes();
@@ -479,24 +479,27 @@ public class IdentifyGenomeSubunits {
 	 * @return
 	 * @throws Exception 
 	 */
-	private List<String> getReferenceTaxonomy(long tax_id_long) throws Exception {
+	public static List<String> getReferenceTaxonomy(long tax_id_long) throws Exception {
 
 		String tax_id = tax_id_long+"";
-
 		List<String> referenceTaxonomy = new ArrayList<>();
+		Map<String, String[]> ncbi_ids;
 
-		NcbiTaxonStub_API ncsa = new NcbiTaxonStub_API(10);
-		Map<String,String[]> ncbi_ids= ncsa.getTaxonList(tax_id, 0);
+		try {
+			
+			NcbiTaxonStub_API ncsa = new NcbiTaxonStub_API(10);
+			ncbi_ids = ncsa.getTaxonList(tax_id, 0);
 
-		String[] taxonomy = ncbi_ids.get(tax_id)[1].split(";");
+			String[] taxonomy = ncbi_ids.get(tax_id)[1].split(";");
 
-		for(String t : taxonomy) {
+			for(String t : taxonomy)
+				referenceTaxonomy.add(t.trim());
 
-			referenceTaxonomy.add(t.trim());
+			referenceTaxonomy.add(ncbi_ids.get(tax_id)[0].trim());
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
 		}
-
-		referenceTaxonomy.add(ncbi_ids.get(tax_id)[0].trim());
-
 		return referenceTaxonomy;
 	}
 
@@ -505,7 +508,7 @@ public class IdentifyGenomeSubunits {
 	 * @return
 	 * @throws SQLException 
 	 */
-	private static Set<String> getECNumbersWithModules(Connection conn) throws SQLException {
+	public static Set<String> getECNumbersWithModules(Connection conn) throws SQLException {
 
 		Set<String> ec_numbers = new HashSet<>();
 
@@ -528,7 +531,7 @@ public class IdentifyGenomeSubunits {
 	 * @param ec_number
 	 * @throws SQLException 
 	 */
-	private static void setSubunitProcessed(Connection conn, String ec_number) throws SQLException {
+	public static void setSubunitProcessed(Connection conn, String ec_number) throws SQLException {
 
 		IdentifyGenomeSubunits.updateECNumberStatus(conn, ec_number,DatabaseProgressStatus.PROCESSED);
 
@@ -542,7 +545,7 @@ public class IdentifyGenomeSubunits {
 	 * @param note
 	 * @throws SQLException
 	 */
-	private static void updateECNumberNote(Connection conn, String ec_number, int module_id, String note) throws SQLException {
+	public static void updateECNumberNote(Connection conn, String ec_number, int module_id, String note) throws SQLException {
 
 		Statement stmt = conn.createStatement();
 
@@ -593,17 +596,17 @@ public class IdentifyGenomeSubunits {
 
 		stmt.close();
 	}
-	
+
 	/**
 	 * @param conn
 	 * @param ec_number
 	 * @throws SQLException
 	 */
-	private static void updateECNumberStatus(Connection conn, String ec_number, DatabaseProgressStatus status) throws SQLException {
+	public static void updateECNumberStatus(Connection conn, String ec_number, DatabaseProgressStatus status) throws SQLException {
 
 		Statement stmt = conn.createStatement();
 
-			stmt.execute("UPDATE subunit SET gpr_status = '"+status+"' WHERE enzyme_ecnumber='"+ec_number+"'");
+		stmt.execute("UPDATE subunit SET gpr_status = '"+status+"' WHERE enzyme_ecnumber='"+ec_number+"'");
 
 		stmt.close();
 	}
@@ -693,6 +696,7 @@ public class IdentifyGenomeSubunits {
 
 			IdentifyGenomeSubunits i = new IdentifyGenomeSubunits(ec_numbers, newGenome, reference_organism_id, msqlmt, similarity_threshold, 
 					referenceTaxonomyThreshold, method, cancel, compareToFullGenome);
+			IdentifyGenomeSubunits.setLogger(Logger.getLogger(IdentifyGenomeSubunits.class .getName()));
 			i.runIdentification();
 
 		}
