@@ -21,13 +21,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.biojava3.core.sequence.ProteinSequence;
+import org.biojava3.core.sequence.io.FastaReaderHelper;
+
 import pt.uminho.sysbio.common.bioapis.externalAPI.kegg.KeggAPI;
-import pt.uminho.sysbio.common.bioapis.externalAPI.ncbi.NcbiTaxonStub_API;
 import pt.uminho.sysbio.common.bioapis.externalAPI.ncbi.NcbiAPI;
 import pt.uminho.sysbio.common.database.connector.datatypes.MySQLMultiThread;
 import pt.uminho.sysbio.common.local.alignments.core.PairwiseSequenceAlignement;
-import pt.uminho.sysbio.common.local.alignments.core.Run_Similarity_Search;
 import pt.uminho.sysbio.common.local.alignments.core.PairwiseSequenceAlignement.ThresholdType;
+import pt.uminho.sysbio.common.local.alignments.core.Run_Similarity_Search;
 import pt.uminho.sysbio.common.local.alignments.core.Run_Similarity_Search.Method;
 import pt.uminho.sysbio.common.utilities.datastructures.map.MapUtils;
 import pt.uminho.sysbio.common.utilities.datastructures.pair.Pair;
@@ -38,9 +40,6 @@ import pt.uminho.sysbio.merlin.gpr.rules.core.output.ProteinsGPR_CI;
 import pt.uminho.sysbio.merlin.gpr.rules.core.output.ReactionsGPR_CI;
 import pt.uminho.sysbio.merlin.utilities.DatabaseProgressStatus;
 import pt.uminho.sysbio.merlin.utilities.TimeLeftProgress;
-
-import org.biojava3.core.sequence.ProteinSequence;
-import org.biojava3.core.sequence.io.FastaReaderHelper;
 
 /**
  * @author ODias
@@ -109,7 +108,7 @@ public class IdentifyGenomeSubunits {
 			this.sequences = new ConcurrentHashMap<>();
 			this.closestOrtholog = new ConcurrentHashMap<>();
 
-			List<String> referenceTaxonomy = IdentifyGenomeSubunits.getReferenceTaxonomy(reference_organism_id);
+			List<String> referenceTaxonomy = NcbiAPI.getReferenceTaxonomy(reference_organism_id);
 			System.out.println("Reference taxonomy set to "+ referenceTaxonomy);
 
 			ConcurrentHashMap<String, Integer> ncbi_taxonomy_ids = new ConcurrentHashMap<>();
@@ -474,34 +473,7 @@ public class IdentifyGenomeSubunits {
 		return kegg_taxonomy_ids;
 	}
 
-	/**
-	 * @param tax_id
-	 * @return
-	 * @throws Exception 
-	 */
-	public static List<String> getReferenceTaxonomy(long tax_id_long) throws Exception {
 
-		String tax_id = tax_id_long+"";
-		List<String> referenceTaxonomy = new ArrayList<>();
-		Map<String, String[]> ncbi_ids;
-
-		try {
-			
-			NcbiTaxonStub_API ncsa = new NcbiTaxonStub_API(10);
-			ncbi_ids = ncsa.getTaxonList(tax_id, 0);
-
-			String[] taxonomy = ncbi_ids.get(tax_id)[1].split(";");
-
-			for(String t : taxonomy)
-				referenceTaxonomy.add(t.trim());
-
-			referenceTaxonomy.add(ncbi_ids.get(tax_id)[0].trim());
-		} 
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		return referenceTaxonomy;
-	}
 
 	/**
 	 * @param msqlmt

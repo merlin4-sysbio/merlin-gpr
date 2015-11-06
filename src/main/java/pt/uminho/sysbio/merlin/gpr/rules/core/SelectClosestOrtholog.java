@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import pt.uminho.sysbio.common.bioapis.externalAPI.ncbi.NcbiTaxonStub_API;
+import pt.uminho.sysbio.common.bioapis.externalAPI.ncbi.NcbiAPI;
 import pt.uminho.sysbio.common.utilities.datastructures.map.MapUtils;
 
 /**
@@ -65,11 +65,9 @@ public class SelectClosestOrtholog //implements Runnable
 
 		List<List<String>> lists = this.splitLists(tax_ids_list, 100);
 
-		NcbiTaxonStub_API ncsa = new NcbiTaxonStub_API(10);
-
 		for(List<String> tax_ids : lists) {
 
-			Map<String,String[]> ncbi_ids = ncsa.getTaxonList(tax_ids.toString());
+			Map<String,String[]> ncbi_ids = NcbiAPI.getTaxonList(tax_ids.toString());
 
 			for(String tax_id : tax_ids) {
 

@@ -17,11 +17,11 @@ import java.util.regex.Pattern;
 
 import pt.uminho.sysbio.common.bioapis.externalAPI.kegg.KeggAPI;
 import pt.uminho.sysbio.merlin.gpr.rules.core.input.GeneAssociation;
+import pt.uminho.sysbio.merlin.gpr.rules.core.input.GeneAssociation.ModuleType;
 import pt.uminho.sysbio.merlin.gpr.rules.core.input.KeggModulesParser;
 import pt.uminho.sysbio.merlin.gpr.rules.core.input.ModuleCI;
 import pt.uminho.sysbio.merlin.gpr.rules.core.input.ProteinGeneAssociation;
 import pt.uminho.sysbio.merlin.gpr.rules.core.input.ReactionProteinGeneAssociation;
-import pt.uminho.sysbio.merlin.gpr.rules.core.input.GeneAssociation.ModuleType;
 import pt.uminho.sysbio.merlin.gpr.rules.grammar.KEGGOrthologyParser;
 
 
@@ -468,7 +468,7 @@ public class AssembleGPR {
 		if(!expregene.isEmpty())
 			ret = new HashSet<>();
 
-			return ret;
+		return ret;
 	}
 
 
@@ -541,6 +541,9 @@ public class AssembleGPR {
 		KEGGOrthologyParser parser = new KEGGOrthologyParser(is);
 
 		List<List<String>> ret = parser.parseDefinition();
+		
+		System.out.println( mic.getModule()+"\t"+ moduleType+"\t"+ret);
+		
 		LOGGER.log(Level.INFO, mic.getModule()+"\t"+ moduleType+"\t"+ret);
 		//System.out.println("definition:\t"+definition);
 		//System.out.println("Relations:\t"+ret);
@@ -714,72 +717,4 @@ public class AssembleGPR {
 		LOGGER = logger;
 	}
 
-	public static void main (String[] args) {
-		//
-		try {
-			//			
-			//			//String reference_organism_id = "171101";
-			//			//String reference_organism_id = "284590";
-			//			
-			//			ConcurrentHashMap<String, ProteinSequence> sequences= new ConcurrentHashMap<>();
-			//			ConcurrentHashMap<String, String> closestOrtholog= new ConcurrentHashMap<>();
-			//			ConcurrentHashMap<String, String> kegg_taxonomy_ids = new ConcurrentHashMap<>();
-			//			ConcurrentHashMap<String, Integer> ncbi_taxonomy_ids = new ConcurrentHashMap<>();
-			//			
-			//			Set<String> genes_ko = new HashSet<>();
-			//			
-			//			AssembleGPR gpr = new AssembleGPR("1.1.1.3");
-			//		AssembleGPR gpr = new AssembleGPR("2.7.1.69");
-			AssembleGPR gpr = new AssembleGPR("2.7.1.69");
-			//			AssembleGPR gpr = new AssembleGPR("2.2.1.6");
-			//			//AssembleGPR gpr = new AssembleGPR("4.2.1.36");
-			//			//AssembleGPR gpr = new AssembleGPR("2.3.3.14");
-			//			//AssembleGPR gpr = new AssembleGPR("2.6.1.39");
-			//			//AssembleGPR gpr = new AssembleGPR("1.2.7.1");
-			//
-			//AssembleGPR gpr = new AssembleGPR("2.6.1.42");
-
-			LOGGER = Logger.getLogger(IdentifyGenomeSubunits.class .getName());
-
-			//Map<String, List<ReactionProteinGeneAssociation>> result =
-			gpr.run();
-
-			//MapUtils.prettyPrint(result);
-
-			//			for(String reaction: result.keySet()) {
-			//
-			//				System.out.println(reaction);
-			//
-			//				for(int i=0; i<result.get(reaction).size(); i++) {
-			//
-			//					for(String p : result.get(reaction).get(i).getProteinGeneAssociation().keySet()) {
-			//
-			//						for(GeneAssociation g : result.get(reaction).get(i).getProteinGeneAssociation().get(p).getGenes()) {
-			//
-			//							genes_ko.addAll(g.getGenes());
-			//						}
-			//					}
-			//				}
-			//				System.out.println(genes_ko);
-			//			}
-			//
-			//			for(String ko : genes_ko) {
-			//
-			//				GetClosestOrhologSequence seq = new GetClosestOrhologSequence(ko, null, sequences, kegg_taxonomy_ids,
-			//						ncbi_taxonomy_ids, closestOrtholog);
-			//				System.out.println(ko+"\t"+seq.getOrtholog());
-			//				System.out.println("\t\t"+seq.getSequences().get(seq.getOrtholog()));
-			//			}
-
-
-
-		}
-		catch (Exception e) {
-
-			e.printStackTrace();
-		}
-		//
-		//
-		//		//System.out.println("\n"+"CASO DE COMPLEXOS PROTEICOS AINDA NAO IMPLEMENTADO!!");
-	}
 }
