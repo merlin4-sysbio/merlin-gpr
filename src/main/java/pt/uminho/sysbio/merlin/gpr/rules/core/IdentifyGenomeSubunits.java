@@ -24,6 +24,8 @@ import java.util.logging.Logger;
 import org.biojava3.core.sequence.ProteinSequence;
 import org.biojava3.core.sequence.io.FastaReaderHelper;
 
+import pt.uminho.ceb.biosystems.mew.utilities.datastructures.map.MapUtils;
+import pt.uminho.ceb.biosystems.mew.utilities.datastructures.pair.Pair;
 import pt.uminho.sysbio.common.bioapis.externalAPI.kegg.KeggAPI;
 import pt.uminho.sysbio.common.bioapis.externalAPI.ncbi.NcbiAPI;
 import pt.uminho.sysbio.common.database.connector.datatypes.MySQLMultiThread;
@@ -31,8 +33,6 @@ import pt.uminho.sysbio.common.local.alignments.core.PairwiseSequenceAlignement;
 import pt.uminho.sysbio.common.local.alignments.core.PairwiseSequenceAlignement.ThresholdType;
 import pt.uminho.sysbio.common.local.alignments.core.Run_Similarity_Search;
 import pt.uminho.sysbio.common.local.alignments.core.Run_Similarity_Search.Method;
-import pt.uminho.sysbio.common.utilities.datastructures.map.MapUtils;
-import pt.uminho.sysbio.common.utilities.datastructures.pair.Pair;
 import pt.uminho.sysbio.merlin.gpr.rules.core.input.GeneAssociation;
 import pt.uminho.sysbio.merlin.gpr.rules.core.input.ModuleCI;
 import pt.uminho.sysbio.merlin.gpr.rules.core.input.ReactionProteinGeneAssociation;
