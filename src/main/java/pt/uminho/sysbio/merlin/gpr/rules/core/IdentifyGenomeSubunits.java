@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.biojava3.core.sequence.ProteinSequence;
-import org.biojava3.core.sequence.io.FastaReaderHelper;
+import org.biojava.nbio.core.sequence.ProteinSequence;
+import org.biojava.nbio.core.sequence.io.FastaReaderHelper;
 
 import pt.uminho.ceb.biosystems.mew.utilities.datastructures.map.MapUtils;
 import pt.uminho.ceb.biosystems.mew.utilities.datastructures.pair.Pair;

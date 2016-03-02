@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.biojava3.core.sequence.ProteinSequence;
+import org.biojava.nbio.core.sequence.ProteinSequence;
 
 import pt.uminho.sysbio.common.bioapis.externalAPI.kegg.KeggAPI;
 
