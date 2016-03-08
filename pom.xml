@@ -12,6 +12,15 @@
 		<pt.uminho.sysbio.version>0.0.1-SNAPSHOT</pt.uminho.sysbio.version>
 	</properties>
 
+	<repositories>
+ 	    <repository>
+			<id>nexus</id>
+			<name>Nexus BioSystems Server</name>
+			<!-- <url>http://192.168.1.99/nexus/content/groups/public/</url> -->
+			<url>http://193.137.11.210/nexus/content/groups/public/</url>
+		</repository> 
+  </repositories> 
+  
 	<!-- <build> <sourceDirectory>D:\workspaces\maven\gpr-rules\src</sourceDirectory> 
 		<scriptSourceDirectory>D:\workspaces\maven\gpr-rules\src\main\scripts</scriptSourceDirectory> 
 		<testSourceDirectory>D:\workspaces\maven\gpr-rules\test</testSourceDirectory> 
@@ -32,10 +41,10 @@
 				<artifactId>nexus-staging-maven-plugin</artifactId>
 				<version>1.6.6</version>
 				<extensions>true</extensions>
-				<configuration>
+<!-- 				<configuration>
 					<serverId>watson</serverId>
 					<nexusUrl>http://192.168.1.99/nexus/</nexusUrl>
-				</configuration>
+				</configuration> -->
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
