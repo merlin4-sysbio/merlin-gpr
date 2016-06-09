@@ -95,14 +95,16 @@
 		</dependency>
 	</dependencies>
 	
-	  <distributionManagement>
-  	<snapshotRepository>
-	    <id>biosystems-snapshots</id>
-	    <url>http://192.168.1.99/nexus/content/repositories/biosystems-snapshots</url>
-	</snapshotRepository>
-	<repository>
-	    <id>biosystems-releases</id>
-		<url>http://192.168.1.99/nexus/content/repositories/biosystems-releases</url>
-	</repository>
-  </distributionManagement>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>biosystems-snapshots</id>
+			<!-- <url>http://192.168.1.99/nexus/content/repositories/biosystems-snapshots</url> -->
+			<url>http://193.137.11.210/nexus/content/repositories/biosystems-snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>biosystems-releases</id>
+			<!-- <url>http://192.168.1.99/nexus/content/repositories/biosystems-releases</url> -->
+			<url>http://193.137.11.210/nexus/content/repositories/biosystems-releases</url>
+		</repository>
+	</distributionManagement>
 </project>
