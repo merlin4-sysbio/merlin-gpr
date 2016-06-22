@@ -9,7 +9,7 @@ import java.util.Map;
 public class GeneAssociation {
 
 	private List<String> genes;
-	//private Map <String, String> locusTags;
+	private Map <String, String> locusTags;
 	private Map<String, ModuleCI> modules;
 
 //	public GeneAssociation (String module, String name) {
@@ -25,7 +25,7 @@ public class GeneAssociation {
 
 		this.genes = new ArrayList<>();
 		this.modules = new HashMap<>();
-		//this.locusTags = new HashMap<>();
+		this.locusTags = new HashMap<>();
 		this.modules.put(mic.getModule(), mic);
 	}
 
@@ -37,13 +37,13 @@ public class GeneAssociation {
 		this.genes.add(gene);
 	}
 	
-//	/**
-//	 * @param gene
-//	 */
-//	public void setLocusTag(String gene, String locus) {
-//
-//		this.locusTags.put(gene, locus);
-//	}
+	/**
+	 * @param gene
+	 */
+	public void setLocusTag(String gene, String locus) {
+
+		this.locusTags.put(gene, locus);
+	}
 
 	/**
 	 * @return the genes
@@ -73,13 +73,13 @@ public class GeneAssociation {
 		this.modules = modules;
 	}
 
-//	/**
-//	 * @return the locusTags
-//	 */
-//	public Map <String, String> getLocusTags() {
-//		return locusTags;
-//	}
-//
+	/**
+	 * @return the locusTags
+	 */
+	public Map <String, String> getLocusTags() {
+		return locusTags;
+	}
+
 //	/**
 //	 * @param locusTags the locusTags to set
 //	 */

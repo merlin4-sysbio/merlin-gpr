@@ -3,7 +3,6 @@
  */
 package pt.uminho.sysbio.merlin.gpr.rules.core;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,11 +17,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.biojava.nbio.core.sequence.ProteinSequence;
-import org.biojava.nbio.core.sequence.io.FastaReaderHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import pt.uminho.ceb.biosystems.mew.utilities.datastructures.map.MapUtils;
 import pt.uminho.ceb.biosystems.mew.utilities.datastructures.pair.Pair;
@@ -46,6 +44,8 @@ import pt.uminho.sysbio.merlin.utilities.TimeLeftProgress;
  *
  */
 public class IdentifyGenomeSubunits {
+	
+	private static final Logger logger = LoggerFactory.getLogger(IdentifyGenomeSubunits.class);
 
 	private Map<String, List<String>> ec_numbers;
 	private Map<String, ProteinSequence> genome;
@@ -58,7 +58,6 @@ public class IdentifyGenomeSubunits {
 	private AtomicBoolean cancel;
 	private double referenceTaxonomyThreshold;
 	private boolean compareToFullGenome;
-	private static Logger logger;
 	private TimeLeftProgress progress;
 
 
@@ -109,7 +108,7 @@ public class IdentifyGenomeSubunits {
 			this.closestOrtholog = new ConcurrentHashMap<>();
 
 			List<String> referenceTaxonomy = NcbiAPI.getReferenceTaxonomy(reference_organism_id);
-			System.out.println("Reference taxonomy set to "+ referenceTaxonomy);
+			logger.info("Reference taxonomy set to {}", referenceTaxonomy);
 
 			ConcurrentHashMap<String, Integer> ncbi_taxonomy_ids = new ConcurrentHashMap<>();
 			ConcurrentHashMap<String, Integer> kegg_taxonomy_scores = new ConcurrentHashMap<>();
@@ -129,22 +128,17 @@ public class IdentifyGenomeSubunits {
 
 				String ec_number = iterator.get(i);
 
-				//double size = counter/this.ec_numbers.keySet().size();
-				//System.out.println("\t"+ec_number+"\t"+size*100+"%\t"+counter);
-
 				if(!hasLetters(ec_number) && !bypass.contains(ec_number)  && !this.cancel.get()) {
 
 					try {
 
-						System.out.print("Retrieving GPR for "+ec_number+"...\t");
+						logger.info("Retrieving GPR for {} ...",ec_number);
 						AssembleGPR gpr = new AssembleGPR(ec_number);
-
-						AssembleGPR.setLogger(logger);
 						Map<String,List<ReactionProteinGeneAssociation>> result = gpr.run();
-						System.out.println("Retrieved!");
+						logger.info("Retrieved!");
 
 						Map<String, Set<String>> genes_ko_modules = IdentifyGenomeSubunits.loadModule(conn, result);
-						System.out.println("Genes, KO, modules\t"+genes_ko_modules);
+						logger.info("Genes, KO, modules \t{}",genes_ko_modules);
 
 						ConcurrentHashMap<String, ProteinSequence> orthologs = new ConcurrentHashMap<>();
 						boolean noOrthologs = true;
@@ -161,16 +155,6 @@ public class IdentifyGenomeSubunits {
 
 								for(String gene : this.closestOrtholog.get(ko))
 									orthologs.put(gene, this.sequences.get(gene));
-
-								//if(orthologs.isEmpty()) {
-								//
-								//	String dummyGene = "noOrg:noOrtholog"+"";  
-								//	Set<String> set = new HashSet<>();
-								//	set.add(dummyGene);
-								//	this.closestOrtholog.put(ko, set);
-								//	orthologs.put(dummyGene, new ProteinSequence(""));
-								//
-								//}
 							}
 							else {
 
@@ -194,7 +178,7 @@ public class IdentifyGenomeSubunits {
 								}
 							}
 						}
-						System.out.println("Orthologs to be searched in genome:\t"+orthologs.keySet());
+						logger.info("Orthologs to be searched in genome:\t{}",orthologs.keySet());
 
 						if(orthologs.size()>0 && !this.cancel.get()) {
 
@@ -246,7 +230,7 @@ public class IdentifyGenomeSubunits {
 
 			ret = false;
 			e.printStackTrace();
-			IdentifyGenomeSubunits.logger.log(Level.SEVERE, e.getMessage(), e);
+			logger.error("{}\n{}", e.getMessage(), e);
 			throw e;
 		}
 		return ret;
@@ -317,12 +301,12 @@ public class IdentifyGenomeSubunits {
 					if(rpg.getProteins()!= null && rpg.getProteins().containsKey(rs.getString(2)))
 						pga = rpg.getProteins().get(rs.getString(2));
 
-					String gene_name = rs.getString(6);
+					String geneSurrogateName = rs.getString(6);
 
 					if(rs.getString(7)!=null && !rs.getString(7).isEmpty() && !rs.getString(7).equalsIgnoreCase("null"))
-						gene_name = rs.getString(7)+"_"+gene_name;
+						geneSurrogateName = rs.getString(7)+"_"+geneSurrogateName;
 
-					pga.addLocusTag(rs.getString(5), gene_name);
+					pga.addLocusTag(rs.getString(5), geneSurrogateName);
 
 					rpg.addProteinGPR_CI(pga);
 				}
@@ -388,9 +372,9 @@ public class IdentifyGenomeSubunits {
 						}
 					}
 
-					for(GeneAssociation g : genes_list) {
+					for(GeneAssociation geneAssociation : genes_list) {
 
-						for(ModuleCI mic : g.getModules().values()) {
+						for(ModuleCI mic : geneAssociation.getModules().values()) {
 
 							ResultSet rs = stmt.executeQuery("SELECT id, definition FROM module WHERE entry_id='"+mic.getModule()+"' AND reaction='"+reaction+"' AND definition ='"+definition+"'");
 
@@ -404,7 +388,7 @@ public class IdentifyGenomeSubunits {
 
 							String idModule = rs.getString(1);
 
-							for(String gene : g.getGenes()) {
+							for(String gene : geneAssociation.getGenes()) {
 
 								rs = stmt.executeQuery("SELECT * FROM orthology WHERE entry_id='"+gene+"'");
 
@@ -488,11 +472,10 @@ public class IdentifyGenomeSubunits {
 
 		ResultSet rs = stmt.executeQuery("SELECT DISTINCT(enzyme_ecnumber) FROM subunit WHERE gpr_status = '"+DatabaseProgressStatus.PROCESSED+"'");
 
-		while(rs.next()) {
-
+		while(rs.next())
 			ec_numbers.add(rs.getString(1));
-		}
-		rs.close();
+
+			rs.close();
 		stmt.close();
 
 		return ec_numbers;
@@ -628,11 +611,6 @@ public class IdentifyGenomeSubunits {
 	public void setProgress(TimeLeftProgress progress) {
 
 		this.progress = progress;
-	}
-
-	public static void setLogger(Logger logger) {
-
-		IdentifyGenomeSubunits.logger = logger;
 	}
 
 }

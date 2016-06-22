@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
 
 import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.io.FastaReaderHelper;
@@ -58,7 +57,6 @@ public class GprTests {
 
 				IdentifyGenomeSubunits i = new IdentifyGenomeSubunits(ec_numbers, newGenome, reference_organism_id, msqlmt, similarity_threshold, 
 						referenceTaxonomyThreshold, method, cancel, compareToFullGenome);
-				IdentifyGenomeSubunits.setLogger(Logger.getLogger(IdentifyGenomeSubunits.class .getName()));
 				i.runIdentification();
 
 			}

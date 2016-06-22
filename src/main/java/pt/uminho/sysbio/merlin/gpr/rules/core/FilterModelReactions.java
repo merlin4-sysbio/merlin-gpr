@@ -8,8 +8,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import pt.uminho.sysbio.common.database.connector.datatypes.Connection;
 import pt.uminho.sysbio.common.database.connector.datatypes.MySQLMultiThread;
@@ -21,7 +22,8 @@ import pt.uminho.sysbio.merlin.gpr.rules.core.output.ReactionsGPR_CI;
  */
 public class FilterModelReactions {
 
-	private static Logger LOGGER;
+	private static final Logger logger = LoggerFactory.getLogger(FilterModelReactions.class);
+
 	private MySQLMultiThread msqlmt;
 	private Map<String, Set<String>> databaseEnzymesReactions;
 	private Map<String, String> annotations; 
@@ -200,7 +202,7 @@ public class FilterModelReactions {
 		for(String r : this.annotations.keySet())
 			s+=r+"\t"+this.annotations.get(r)+"\n";
 
-		LOGGER.log(Level.INFO, s);
+		logger.info("{}", s);
 
 	}
 
@@ -265,7 +267,7 @@ public class FilterModelReactions {
 		}
 		connection.closeConnection();
 
-		System.out.println("Removed notes\t"+notes_map);
+		logger.debug("Removed notes\t"+notes_map);
 
 		java.sql.Connection conn = this.msqlmt.openConnection();
 		PreparedStatement statement = conn.prepareStatement("UPDATE reaction SET inModel=?, notes=? WHERE reaction.name=?");
@@ -315,7 +317,7 @@ public class FilterModelReactions {
 
 		for (String name : this.kept) {
 
-			ResultSet rs = stmt.executeQuery("SELECT notes FROM reaction  WHERE reaction.name='"+name+"'");
+			ResultSet rs = stmt.executeQuery("SELECT notes FROM reaction WHERE reaction.name='"+name+"'");
 
 			if(rs.next() && rs.getString(1)!=null && !rs.getString(1).isEmpty())
 				notes_map.put(name, rs.getString(1));
@@ -331,37 +333,29 @@ public class FilterModelReactions {
 
 		connection.closeConnection();
 
-		System.out.println("Kept notes\t"+notes_map);
-		System.out.println("Kept notes new annotation\t"+notes_map_new);
-
 		java.sql.Connection conn = this.msqlmt.openConnection();
 
-		PreparedStatement statement = conn.prepareStatement("UPDATE reaction SET notes=? WHERE reaction.name=?");
+		PreparedStatement statement = conn.prepareStatement("UPDATE reaction SET boolean_rule=?, note=? WHERE reaction.name=?");
 
 		int i = 0;
 		for (String name : this.kept) {
 
-			String note = "GENE_ASSOCIATION: " + this.annotations.get(name)+" | GPR set from tool";
+			//String note = "GENE_ASSOCIATION: " + this.annotations.get(name)+" | GPR set from tool";
+			String note = this.annotations.get(name);
 
+			String old_note = "GPR set from tool";
+			
 			if(notes_map.containsKey(name)) {
+				
+				old_note = notes_map.get(name);
 
-				String old_note = notes_map.get(name);
-
-				if(old_note.contains("GPR set from tool")) {
-
-					String[] data = old_note.split(" \\| ");
-
-					if(data.length>2)
-						note+=" | "+data[2];
-				}
-				else {
-
-					note+=" | "+old_note;
-				}
+				if(!old_note.contains("GPR set from tool"))
+					old_note = old_note.trim().concat(" | GPR set from tool");
 			}
 
 			statement.setString(1, note);
-			statement.setString(2, name);
+			statement.setString(2, old_note);
+			statement.setString(3, name);
 			statement.addBatch();
 
 			if ((i + 1) % 1000 == 0) {
@@ -375,27 +369,22 @@ public class FilterModelReactions {
 		i = 0;
 		for (String name : this.keptWithDifferentAnnotation) {
 
-			String note = "GENE_ASSOCIATION: " + this.annotations.get(name)+" | New Annotation. GPR set from tool.";
+			//String note = "GENE_ASSOCIATION: " + this.annotations.get(name)+" | New Annotation. GPR set from tool.";
+			String note = this.annotations.get(name);
 
+			String old_note = "New Annotation. GPR set from tool";
+			
 			if(notes_map.containsKey(name)) {
+				
+				old_note = notes_map.get(name);
 
-				String old_note = notes_map.get(name);
-
-				if(old_note.contains("New Annotation. GPR set from tool")) {
-
-					String[] data = old_note.split(" \\| ");
-
-					if(data.length>2)
-						note+=" | "+data[2];
-				}
-				else {
-
-					note+=" | "+old_note;
-				}
+				if(!old_note.contains("New Annotation. GPR set from tool"))
+					old_note = old_note.trim().concat(" | GPR set from tool");
 			}
 
 			statement.setString(1, note);
-			statement.setString(2, name);
+			statement.setString(2, old_note);
+			statement.setString(3, name);
 			statement.addBatch();
 
 			if ((i + 1) % 1000 == 0) {
@@ -407,19 +396,5 @@ public class FilterModelReactions {
 		statement.executeBatch();
 
 		conn.close();
-	}
-
-	/**
-	 * @return the logger
-	 */
-	public static Logger getLogger() {
-		return LOGGER;
-	}
-
-	/**
-	 * @param logger the logger to set
-	 */
-	public static void setLogger(Logger logger) {
-		LOGGER = logger;
 	}
 }

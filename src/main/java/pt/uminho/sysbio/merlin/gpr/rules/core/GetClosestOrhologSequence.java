@@ -11,6 +11,10 @@ import org.biojava.nbio.core.sequence.ProteinSequence;
 
 import pt.uminho.sysbio.common.bioapis.externalAPI.kegg.KeggAPI;
 
+/**
+ * @author Oscar Dias
+ *
+ */
 public class GetClosestOrhologSequence {
 
 	private ConcurrentHashMap<String, ProteinSequence> sequences;

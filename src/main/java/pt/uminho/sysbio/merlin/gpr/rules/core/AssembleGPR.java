@@ -10,10 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import pt.uminho.sysbio.common.bioapis.externalAPI.kegg.KeggAPI;
 import pt.uminho.sysbio.merlin.gpr.rules.core.input.GeneAssociation;
@@ -31,14 +32,13 @@ import pt.uminho.sysbio.merlin.gpr.rules.grammar.KEGGOrthologyParser;
  */
 public class AssembleGPR {
 
+	private static final Logger logger = LoggerFactory.getLogger(AssembleGPR.class);
 
 	private String ec_number;
 	private Map<String, List<String>> orthologsReactions;
-	//private Map<String, List<String>> initialOrthologsReactions;
 	private List<String> orthologsEnzymes;
 	private List<String> reactionsEnzymes;
 	private boolean isPartialECnumber;
-	private static Logger LOGGER; 
 
 	//TODO vero que fazer com o menos!!! \\+ \\-
 
@@ -542,11 +542,7 @@ public class AssembleGPR {
 
 		List<List<String>> ret = parser.parseDefinition();
 		
-		System.out.println( mic.getModule()+"\t"+ moduleType+"\t"+ret);
-		
-		LOGGER.log(Level.INFO, mic.getModule()+"\t"+ moduleType+"\t"+ret);
-		//System.out.println("definition:\t"+definition);
-		//System.out.println("Relations:\t"+ret);
+		logger.info("{}\t{}\t{} ", mic.getModule(),moduleType,ret);
 
 		List<GeneAssociation> geneAssociationList = null;
 
@@ -637,8 +633,7 @@ public class AssembleGPR {
 	 * @param index
 	 * @param definition
 	 * @param reaction
-	 * @param module
-	 * @param moduleType
+	 * @param mic
 	 * @return
 	 * @throws Exception
 	 */
@@ -664,20 +659,16 @@ public class AssembleGPR {
 				GeneAssociation gene_rule = new GeneAssociation(mic);
 
 				String[] and_rules = rule.split(" and ");
-				for(String and_rule : and_rules) {
-
-					if(this.orthologsReactions.get(reaction).contains(and_rule.trim())) {
-
+				
+				for(String and_rule : and_rules)
+					if(this.orthologsReactions.get(reaction).contains(and_rule.trim()))
 						gene_rule.addGene(and_rule);
-					}
-				}
 
 				if(gene_rule.getGenes().size()>0)
 					gene_rules.add(gene_rule);
 			}
 
-
-			//System.out.println("GPR RULE:\t"+reaction_rule);
+			logger.info("GPR RULE:\t {}",gene_rules);
 			return gene_rules;
 		}
 		return null;
@@ -702,19 +693,4 @@ public class AssembleGPR {
 		}
 		return ret;
 	}
-
-	/**
-	 * @return the logger
-	 */
-	public static Logger getLogger() {
-		return LOGGER;
-	}
-
-	/**
-	 * @param logger the logger to set
-	 */
-	public static void setLogger(Logger logger) {
-		LOGGER = logger;
-	}
-
 }
