@@ -335,7 +335,7 @@ public class FilterModelReactions {
 
 		java.sql.Connection conn = this.msqlmt.openConnection();
 
-		PreparedStatement statement = conn.prepareStatement("UPDATE reaction SET boolean_rule=?, note=? WHERE reaction.name=?");
+		PreparedStatement statement = conn.prepareStatement("UPDATE reaction SET boolean_rule=?, notes=? WHERE reaction.name=?");
 
 		int i = 0;
 		for (String name : this.kept) {

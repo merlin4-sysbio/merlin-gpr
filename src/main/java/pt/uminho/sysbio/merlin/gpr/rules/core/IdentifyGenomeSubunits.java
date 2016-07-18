@@ -212,8 +212,8 @@ public class IdentifyGenomeSubunits {
 					catch (Exception e) {
 
 						IdentifyGenomeSubunits.updateECNumberStatus(conn, ec_number, DatabaseProgressStatus.PROCESSING);
-						e.printStackTrace();
 						ret = false;
+						logger.error("error {}",e.getMessage());
 					}
 				}
 				IdentifyGenomeSubunits.setSubunitProcessed(conn, ec_number);
