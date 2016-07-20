@@ -26,7 +26,7 @@ import pt.uminho.ceb.biosystems.mew.utilities.datastructures.map.MapUtils;
 import pt.uminho.ceb.biosystems.mew.utilities.datastructures.pair.Pair;
 import pt.uminho.sysbio.common.bioapis.externalAPI.kegg.KeggAPI;
 import pt.uminho.sysbio.common.bioapis.externalAPI.ncbi.NcbiAPI;
-import pt.uminho.sysbio.common.database.connector.datatypes.MySQLMultiThread;
+import pt.uminho.sysbio.common.database.connector.datatypes.DatabaseAccess;
 import pt.uminho.sysbio.common.local.alignments.core.PairwiseSequenceAlignement;
 import pt.uminho.sysbio.common.local.alignments.core.PairwiseSequenceAlignement.ThresholdType;
 import pt.uminho.sysbio.common.local.alignments.core.Run_Similarity_Search;
@@ -52,7 +52,7 @@ public class IdentifyGenomeSubunits {
 	private long reference_organism_id;
 	private ConcurrentHashMap<String, ProteinSequence> sequences;
 	private ConcurrentHashMap<String, Set<String>> closestOrtholog;
-	private MySQLMultiThread msqlmt;
+	private DatabaseAccess dba;
 	private double similarity_threshold;
 	private Method method;
 	private AtomicBoolean cancel;
@@ -62,18 +62,18 @@ public class IdentifyGenomeSubunits {
 
 
 	/**
-	 * @param msqlmt
+	 * @param dba
 	 */
-	public IdentifyGenomeSubunits(MySQLMultiThread msqlmt) {
+	public IdentifyGenomeSubunits(DatabaseAccess dba) {
 
-		this.msqlmt = msqlmt;
+		this.dba = dba;
 	}
 
 	/**
 	 * @param ec_numbers
 	 * @param genome
 	 * @param reference_organism_id
-	 * @param msqlmt
+	 * @param dba
 	 * @param similarity_threshold
 	 * @param referenceTaxonomyThreshold
 	 * @param method
@@ -81,13 +81,13 @@ public class IdentifyGenomeSubunits {
 	 * @param compareToFullGenome
 	 */
 	public IdentifyGenomeSubunits(Map<String, List<String>> ec_numbers, Map<String, ProteinSequence> genome, long reference_organism_id, 
-			MySQLMultiThread msqlmt, double similarity_threshold, double referenceTaxonomyThreshold, Method method, 
+			DatabaseAccess dba, double similarity_threshold, double referenceTaxonomyThreshold, Method method, 
 			AtomicBoolean cancel, boolean compareToFullGenome) {
 
 		this.ec_numbers = ec_numbers;
 		this.genome = genome;
 		this.reference_organism_id = reference_organism_id;
-		this.msqlmt = msqlmt;
+		this.dba = dba;
 		this.similarity_threshold = similarity_threshold;
 		this.method = method;
 		this.cancel = cancel;
@@ -117,7 +117,7 @@ public class IdentifyGenomeSubunits {
 			kegg_taxonomy_scores.put("noOrg", 0);
 			Map<String, String> kegg_taxonomy_ids = IdentifyGenomeSubunits.getKeggTaxonomyIDs();
 
-			Connection conn = this.msqlmt.openConnection();
+			Connection conn = this.dba.openConnection();
 
 			Set<String> bypass = IdentifyGenomeSubunits.getECNumbersWithModules(conn);
 
@@ -158,7 +158,7 @@ public class IdentifyGenomeSubunits {
 							}
 							else {
 
-								Map<String, Set<String>> temp = IdentifyGenomeSubunits.getOrthologs(ko,this.msqlmt.openConnection());
+								Map<String, Set<String>> temp = IdentifyGenomeSubunits.getOrthologs(ko,this.dba.openConnection());
 
 								for(String key : temp.keySet()) {
 
@@ -173,7 +173,7 @@ public class IdentifyGenomeSubunits {
 										similarityData[2]= null;
 										similarityData[3]= null;
 
-										PairwiseSequenceAlignement.loadOrthologsData(similarityData, conn, ec_number, temp, genes_ko_modules);
+										PairwiseSequenceAlignement.loadOrthologsData(similarityData, conn, ec_number, temp, genes_ko_modules, this.dba.get_database_type());
 									}
 								}
 							}
@@ -182,7 +182,7 @@ public class IdentifyGenomeSubunits {
 
 						if(orthologs.size()>0 && !this.cancel.get()) {
 
-							Run_Similarity_Search search = new Run_Similarity_Search(this.msqlmt, this.genome, this.similarity_threshold, 
+							Run_Similarity_Search search = new Run_Similarity_Search(this.dba, this.genome, this.similarity_threshold, 
 									this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(this.ec_numbers.size()), -1, ThresholdType.ALIGNMENT);
 							search.setEc_number(ec_number);
 							search.setModules(genes_ko_modules);
@@ -224,7 +224,7 @@ public class IdentifyGenomeSubunits {
 				if(this.progress!=null)
 					progress.setTime(GregorianCalendar.getInstance().getTimeInMillis() - startTime, i, iterator.size());
 			}
-			this.msqlmt.closeConnection(conn);
+			this.dba.closeConnection(conn);
 		} 
 		catch (Exception e) {
 
@@ -269,7 +269,7 @@ public class IdentifyGenomeSubunits {
 	 */
 	public Map<String, ReactionsGPR_CI> runAssignment(double threshold) throws SQLException {
 
-		Connection conn = this.msqlmt.openConnection();
+		Connection conn = this.dba.openConnection();
 		Statement stmt = conn.createStatement();
 
 		ResultSet rs = stmt.executeQuery("SELECT DISTINCT reaction, enzyme_ecnumber, definition, idgene, " +
@@ -315,7 +315,7 @@ public class IdentifyGenomeSubunits {
 			}
 		}
 
-		this.msqlmt.closeConnection(conn);
+		this.dba.closeConnection(conn);
 		return rpgs;
 	}
 
@@ -460,7 +460,7 @@ public class IdentifyGenomeSubunits {
 
 
 	/**
-	 * @param msqlmt
+	 * @param dba
 	 * @return
 	 * @throws SQLException 
 	 */
@@ -567,16 +567,16 @@ public class IdentifyGenomeSubunits {
 	}
 
 	/**
-	 * @param msqlmt
+	 * @param dba
 	 * @param originalReactions 
 	 * @return
 	 * @throws SQLException
 	 */
-	public static Map<String, List<String>> getECNumbers(MySQLMultiThread msqlmt) throws SQLException {
+	public static Map<String, List<String>> getECNumbers(DatabaseAccess dba) throws SQLException {
 
 		Map<String, List<String>> ec_numbers = new HashMap<>();
 
-		Connection conn = msqlmt.openConnection();
+		Connection conn = dba.openConnection();
 		Statement stmt = conn.createStatement();
 
 		ResultSet rs = stmt.executeQuery("SELECT locusTag, enzyme_ecnumber FROM subunit " +
@@ -600,7 +600,7 @@ public class IdentifyGenomeSubunits {
 		}
 		rs.close();
 		stmt.close();
-		msqlmt.closeConnection(conn);
+		dba.closeConnection(conn);
 
 		return ec_numbers;
 	}

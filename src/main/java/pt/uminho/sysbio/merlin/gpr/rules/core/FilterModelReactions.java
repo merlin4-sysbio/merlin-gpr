@@ -13,7 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pt.uminho.sysbio.common.database.connector.datatypes.Connection;
-import pt.uminho.sysbio.common.database.connector.datatypes.MySQLMultiThread;
+import pt.uminho.sysbio.common.database.connector.datatypes.DatabaseAccess;
+import pt.uminho.sysbio.common.database.connector.datatypes.H2DatabaseAccess;
+import pt.uminho.sysbio.common.database.connector.datatypes.MySQLDatabaseAccess;
+import pt.uminho.sysbio.common.database.connector.datatypes.Enumerators.DatabaseType;
 import pt.uminho.sysbio.merlin.gpr.rules.core.output.ReactionsGPR_CI;
 
 /**
@@ -24,7 +27,8 @@ public class FilterModelReactions {
 
 	private static final Logger logger = LoggerFactory.getLogger(FilterModelReactions.class);
 
-	private MySQLMultiThread msqlmt;
+	private DatabaseAccess dba;
+	private DatabaseType database_type;
 	private Map<String, Set<String>> databaseEnzymesReactions;
 	private Map<String, String> annotations; 
 	private boolean originalReactions;
@@ -41,18 +45,22 @@ public class FilterModelReactions {
 	 */
 	public FilterModelReactions(String user, String password, String server, int port, String database, boolean originalReactions) {
 
-		MySQLMultiThread msqlmt = new MySQLMultiThread(user, password, server, port, database);
+		if (this.database_type.equals(DatabaseType.MYSQL)) {
+			this.dba = new MySQLDatabaseAccess(user, password, server, port, database);
+		}else{
+			this.dba = new H2DatabaseAccess(user, password, database);
+		}
 
-		new FilterModelReactions(msqlmt, originalReactions);
+		new FilterModelReactions(dba, originalReactions);
 	}
 
 	/**
-	 * @param msqlmt
+	 * @param dba
 	 * @param originalReactions
 	 */
-	public FilterModelReactions(MySQLMultiThread msqlmt, boolean originalReactions) {
+	public FilterModelReactions(DatabaseAccess dba, boolean originalReactions) {
 
-		this.msqlmt = msqlmt;
+		this.dba = dba;
 		this.databaseEnzymesReactions = new HashMap<>();
 		this.originalReactions = originalReactions;
 
@@ -72,7 +80,7 @@ public class FilterModelReactions {
 
 		Set<String> ret = new HashSet<String>();
 
-		Connection conn = new Connection(this.msqlmt);
+		Connection conn = new Connection(this.dba);
 
 		Statement stmt = conn.createStatement();
 
@@ -216,7 +224,7 @@ public class FilterModelReactions {
 
 		Map<String, String> notes_map = new HashMap<>();
 		Set<String> reactionsToKeep = new HashSet<String>();
-		Connection connection = new Connection(this.msqlmt);
+		Connection connection = new Connection(this.dba);
 		Statement stmt = connection.createStatement();
 
 		for (String name : this.removed) {
@@ -269,7 +277,7 @@ public class FilterModelReactions {
 
 		logger.debug("Removed notes\t"+notes_map);
 
-		java.sql.Connection conn = this.msqlmt.openConnection();
+		java.sql.Connection conn = this.dba.openConnection();
 		PreparedStatement statement = conn.prepareStatement("UPDATE reaction SET inModel=?, notes=? WHERE reaction.name=?");
 
 		int i = 0;
@@ -312,7 +320,7 @@ public class FilterModelReactions {
 		Map<String, String> notes_map = new HashMap<>();
 		Map<String, String> notes_map_new = new HashMap<>();
 
-		Connection connection = new Connection(this.msqlmt);
+		Connection connection = new Connection(this.dba);
 		Statement stmt = connection.createStatement();
 
 		for (String name : this.kept) {
@@ -333,7 +341,7 @@ public class FilterModelReactions {
 
 		connection.closeConnection();
 
-		java.sql.Connection conn = this.msqlmt.openConnection();
+		java.sql.Connection conn = this.dba.openConnection();
 
 		PreparedStatement statement = conn.prepareStatement("UPDATE reaction SET boolean_rule=?, notes=? WHERE reaction.name=?");
 

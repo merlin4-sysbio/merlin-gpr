@@ -9,7 +9,8 @@ import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.io.FastaReaderHelper;
 import org.junit.Test;
 
-import pt.uminho.sysbio.common.database.connector.datatypes.MySQLMultiThread;
+import pt.uminho.sysbio.common.database.connector.datatypes.DatabaseAccess;
+import pt.uminho.sysbio.common.database.connector.datatypes.MySQLDatabaseAccess;
 import pt.uminho.sysbio.common.local.alignments.core.Run_Similarity_Search.Method;
 import pt.uminho.sysbio.merlin.gpr.rules.core.FilterModelReactions;
 import pt.uminho.sysbio.merlin.gpr.rules.core.IdentifyGenomeSubunits;
@@ -39,7 +40,7 @@ public class GprTests {
 
 			boolean originalReaction = false;
 
-			MySQLMultiThread msqlmt = new MySQLMultiThread(user, password, server, port, database);
+			DatabaseAccess msqlmt = new MySQLDatabaseAccess(user, password, server, port, database);
 
 			if(identifyOrAssign) {
 
