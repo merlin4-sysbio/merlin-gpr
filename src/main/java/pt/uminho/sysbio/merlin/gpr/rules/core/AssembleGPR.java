@@ -17,12 +17,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pt.uminho.sysbio.common.bioapis.externalAPI.kegg.KeggAPI;
-import pt.uminho.sysbio.merlin.gpr.rules.core.input.GeneAssociation;
-import pt.uminho.sysbio.merlin.gpr.rules.core.input.GeneAssociation.ModuleType;
+import pt.uminho.sysbio.common.database.connector.databaseAPI.containers.gpr.GeneAssociation;
+import pt.uminho.sysbio.common.database.connector.databaseAPI.containers.gpr.ModuleCI;
+import pt.uminho.sysbio.common.database.connector.databaseAPI.containers.gpr.ProteinGeneAssociation;
+import pt.uminho.sysbio.common.database.connector.databaseAPI.containers.gpr.ReactionProteinGeneAssociation;
+import pt.uminho.sysbio.common.database.connector.datatypes.Enumerators.ModuleType;
 import pt.uminho.sysbio.merlin.gpr.rules.core.input.KeggModulesParser;
-import pt.uminho.sysbio.merlin.gpr.rules.core.input.ModuleCI;
-import pt.uminho.sysbio.merlin.gpr.rules.core.input.ProteinGeneAssociation;
-import pt.uminho.sysbio.merlin.gpr.rules.core.input.ReactionProteinGeneAssociation;
 import pt.uminho.sysbio.merlin.gpr.rules.grammar.KEGGOrthologyParser;
 
 

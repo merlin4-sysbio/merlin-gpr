@@ -3,16 +3,14 @@
  */
 package pt.uminho.sysbio.merlin.gpr.rules.core;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -23,19 +21,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pt.uminho.ceb.biosystems.mew.utilities.datastructures.map.MapUtils;
-import pt.uminho.ceb.biosystems.mew.utilities.datastructures.pair.Pair;
 import pt.uminho.sysbio.common.bioapis.externalAPI.kegg.KeggAPI;
 import pt.uminho.sysbio.common.bioapis.externalAPI.ncbi.NcbiAPI;
+import pt.uminho.sysbio.common.database.connector.databaseAPI.ModelAPI;
+import pt.uminho.sysbio.common.database.connector.databaseAPI.containers.gpr.ReactionProteinGeneAssociation;
+import pt.uminho.sysbio.common.database.connector.databaseAPI.containers.gpr.ReactionsGPR_CI;
+import pt.uminho.sysbio.common.database.connector.datatypes.Connection;
 import pt.uminho.sysbio.common.database.connector.datatypes.DatabaseAccess;
+import pt.uminho.sysbio.common.local.alignments.core.Enumerators.Method;
+import pt.uminho.sysbio.common.local.alignments.core.Enumerators.ThresholdType;
 import pt.uminho.sysbio.common.local.alignments.core.PairwiseSequenceAlignement;
-import pt.uminho.sysbio.common.local.alignments.core.PairwiseSequenceAlignement.ThresholdType;
-import pt.uminho.sysbio.common.local.alignments.core.Run_Similarity_Search;
-import pt.uminho.sysbio.common.local.alignments.core.Run_Similarity_Search.Method;
-import pt.uminho.sysbio.merlin.gpr.rules.core.input.GeneAssociation;
-import pt.uminho.sysbio.merlin.gpr.rules.core.input.ModuleCI;
-import pt.uminho.sysbio.merlin.gpr.rules.core.input.ReactionProteinGeneAssociation;
-import pt.uminho.sysbio.merlin.gpr.rules.core.output.ProteinsGPR_CI;
-import pt.uminho.sysbio.merlin.gpr.rules.core.output.ReactionsGPR_CI;
+import pt.uminho.sysbio.common.local.alignments.core.RunSimilaritySearch;
 import pt.uminho.sysbio.merlin.utilities.DatabaseProgressStatus;
 import pt.uminho.sysbio.merlin.utilities.TimeLeftProgress;
 
@@ -43,11 +39,11 @@ import pt.uminho.sysbio.merlin.utilities.TimeLeftProgress;
  * @author ODias
  *
  */
-public class IdentifyGenomeSubunits {
-	
+public class IdentifyGenomeSubunits extends Observable implements Observer {
+
 	private static final Logger logger = LoggerFactory.getLogger(IdentifyGenomeSubunits.class);
 
-	private Map<String, List<String>> ec_numbers;
+	private Map<String, List<String>> ecNumbers;
 	private Map<String, ProteinSequence> genome;
 	private long reference_organism_id;
 	private ConcurrentHashMap<String, ProteinSequence> sequences;
@@ -62,14 +58,8 @@ public class IdentifyGenomeSubunits {
 
 
 	/**
-	 * @param dba
-	 */
-	public IdentifyGenomeSubunits(DatabaseAccess dba) {
-
-		this.dba = dba;
-	}
-
-	/**
+	 * Constructor for class that identifies genome subunits.
+	 * 
 	 * @param ec_numbers
 	 * @param genome
 	 * @param reference_organism_id
@@ -77,14 +67,14 @@ public class IdentifyGenomeSubunits {
 	 * @param similarity_threshold
 	 * @param referenceTaxonomyThreshold
 	 * @param method
-	 * @param cancel
 	 * @param compareToFullGenome
+	 * @param cancel
 	 */
 	public IdentifyGenomeSubunits(Map<String, List<String>> ec_numbers, Map<String, ProteinSequence> genome, long reference_organism_id, 
 			DatabaseAccess dba, double similarity_threshold, double referenceTaxonomyThreshold, Method method, 
-			AtomicBoolean cancel, boolean compareToFullGenome) {
+			boolean compareToFullGenome, AtomicBoolean cancel) {
 
-		this.ec_numbers = ec_numbers;
+		this.ecNumbers = ec_numbers;
 		this.genome = genome;
 		this.reference_organism_id = reference_organism_id;
 		this.dba = dba;
@@ -94,6 +84,7 @@ public class IdentifyGenomeSubunits {
 		this.referenceTaxonomyThreshold = referenceTaxonomyThreshold;
 		this.compareToFullGenome = compareToFullGenome;
 	}
+
 
 	/**
 	 * @throws Exception
@@ -117,12 +108,12 @@ public class IdentifyGenomeSubunits {
 			kegg_taxonomy_scores.put("noOrg", 0);
 			Map<String, String> kegg_taxonomy_ids = IdentifyGenomeSubunits.getKeggTaxonomyIDs();
 
-			Connection conn = this.dba.openConnection();
+			Connection conn = new Connection(this.dba);
 
-			Set<String> bypass = IdentifyGenomeSubunits.getECNumbersWithModules(conn);
+			Set<String> bypass = ModelAPI.getECNumbersWithModules(conn);
 
 			long startTime = GregorianCalendar.getInstance().getTimeInMillis();
-			List<String> iterator = new ArrayList<>(this.ec_numbers.keySet());
+			List<String> iterator = new ArrayList<>(this.ecNumbers.keySet());
 
 			for(int i = 0; i<iterator.size(); i++) {
 
@@ -137,43 +128,46 @@ public class IdentifyGenomeSubunits {
 						Map<String,List<ReactionProteinGeneAssociation>> result = gpr.run();
 						logger.info("Retrieved!");
 
-						Map<String, Set<String>> genes_ko_modules = IdentifyGenomeSubunits.loadModule(conn, result);
+						Map<String, Set<String>> genes_ko_modules = ModelAPI.loadModule(conn, result);
 						logger.info("Genes, KO, modules \t{}",genes_ko_modules);
 
 						ConcurrentHashMap<String, ProteinSequence> orthologs = new ConcurrentHashMap<>();
 						boolean noOrthologs = true;
 
-						for(String ko : genes_ko_modules.keySet()) {
+						for(String ko : genes_ko_modules.keySet()) { 
 
-							List<String> locusTags = PairwiseSequenceAlignement.checkDatabase(conn, ko);
+							if(!this.cancel.get()){
 
-							if(locusTags.isEmpty()) {
+								List<String> locusTags = ModelAPI.checkDatabase(conn, ko);
 
-								GetClosestOrhologSequence seq = new GetClosestOrhologSequence(ko, referenceTaxonomy, this.sequences, kegg_taxonomy_ids,
-										ncbi_taxonomy_ids, kegg_taxonomy_scores, this.closestOrtholog, orthologsSequences );
-								seq.run();
+								if(locusTags.isEmpty()) {
 
-								for(String gene : this.closestOrtholog.get(ko))
-									orthologs.put(gene, this.sequences.get(gene));
-							}
-							else {
+									GetClosestOrhologSequence seq = new GetClosestOrhologSequence(ko, referenceTaxonomy, this.sequences, kegg_taxonomy_ids,
+											ncbi_taxonomy_ids, kegg_taxonomy_scores, this.closestOrtholog, orthologsSequences );
+									seq.run();
 
-								Map<String, Set<String>> temp = IdentifyGenomeSubunits.getOrthologs(ko,this.dba.openConnection());
+									for(String gene : this.closestOrtholog.get(ko))
+										orthologs.put(gene, this.sequences.get(gene));
+								}
+								else {
 
-								for(String key : temp.keySet()) {
+									Map<String, Set<String>> temp = ModelAPI.getOrthologs(ko, conn);
 
-									noOrthologs = false;
+									for(String key : temp.keySet()) {
 
-									for(String locus :locusTags) {
+										noOrthologs = false;
 
-										String[] similarityData = new String[4];
+										for(String locus :locusTags) {
 
-										similarityData[0]= key;
-										similarityData[1]= locus;
-										similarityData[2]= null;
-										similarityData[3]= null;
+											String[] similarityData = new String[4];
 
-										PairwiseSequenceAlignement.loadOrthologsData(similarityData, conn, ec_number, temp, genes_ko_modules, this.dba.get_database_type());
+											similarityData[0]= key;
+											similarityData[1]= locus;
+											similarityData[2]= null;
+											similarityData[3]= null;
+
+											PairwiseSequenceAlignement.loadOrthologsData(similarityData, conn, ec_number, temp, genes_ko_modules, this.dba.get_database_type());
+										}
 									}
 								}
 							}
@@ -182,14 +176,16 @@ public class IdentifyGenomeSubunits {
 
 						if(orthologs.size()>0 && !this.cancel.get()) {
 
-							Run_Similarity_Search search = new Run_Similarity_Search(this.dba, this.genome, this.similarity_threshold, 
-									this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(this.ec_numbers.size()), -1, ThresholdType.ALIGNMENT);
+							RunSimilaritySearch search = new RunSimilaritySearch(this.dba, this.genome, this.similarity_threshold, 
+									this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(0), -1, ThresholdType.ALIGNMENT);
+
+							//search.addObserver(this);
 							search.setEc_number(ec_number);
 							search.setModules(genes_ko_modules);
 							search.setClosestOrthologs(MapUtils.revertMapFromSet(this.closestOrtholog));
 							search.setReferenceTaxonomyScore(referenceTaxonomy.size());
 							search.setKegg_taxonomy_scores(kegg_taxonomy_scores);
-							search.setAnnotatedGenes(this.ec_numbers.get(ec_number));
+							search.setAnnotatedGenes(this.ecNumbers.get(ec_number));
 							search.setReferenceTaxonomyThreshold(this.referenceTaxonomyThreshold);
 							search.setCompareToFullGenome(this.compareToFullGenome);
 							search.run_OrthologsSearch();
@@ -201,17 +197,17 @@ public class IdentifyGenomeSubunits {
 								int module_id = Integer.parseInt(module);
 
 								if(search.getSequencesWithoutSimilarities().containsAll(modules.get(module)))
-									IdentifyGenomeSubunits.updateECNumberNote(conn, ec_number, module_id, "no_similarities");
+									ModelAPI.updateECNumberNote(conn, ec_number, module_id, "no_similarities");
 							}
 						}
 						else if(noOrthologs) {
 
-							IdentifyGenomeSubunits.updateECNumberNote(conn, ec_number, -1, null);
+							ModelAPI.updateECNumberNote(conn, ec_number, -1, null);
 						}
 					}
 					catch (Exception e) {
 
-						IdentifyGenomeSubunits.updateECNumberStatus(conn, ec_number, DatabaseProgressStatus.PROCESSING);
+						ModelAPI.updateECNumberStatus(conn, ec_number, DatabaseProgressStatus.PROCESSING.toString());
 						ret = false;
 						logger.error("error {}",e.getMessage());
 					}
@@ -224,7 +220,7 @@ public class IdentifyGenomeSubunits {
 				if(this.progress!=null)
 					progress.setTime(GregorianCalendar.getInstance().getTimeInMillis() - startTime, i, iterator.size());
 			}
-			this.dba.closeConnection(conn);
+			conn.closeConnection();
 		} 
 		catch (Exception e) {
 
@@ -237,86 +233,15 @@ public class IdentifyGenomeSubunits {
 	}
 
 	/**
-	 * @param ko
-	 * @return
-	 * @throws SQLException
-	 */
-	public static Map<String, Set<String>> getOrthologs(String ko, Connection conn) throws SQLException {
-
-		Map<String, Set<String>> ret = new HashMap<>();
-		Set<String> ret_set = new HashSet<>();
-
-		ret_set.add(ko);
-
-		Statement stmt = conn.createStatement();
-
-		ResultSet rs = stmt.executeQuery("SELECT locus_id FROM orthology where entry_id = '"+ko+"'");
-
-		while(rs.next()) {
-
-			if(rs.getString(1)!=null)
-				ret.put(" :"+rs.getString(1), ret_set);
-		}
-
-		conn.close();;
-		return ret;
-	}
-
-
-	/**
+	 * Run gene-protein reactions assignment.
+	 * 
 	 * @param threshold 
 	 * @throws SQLException
 	 */
-	public Map<String, ReactionsGPR_CI> runAssignment(double threshold) throws SQLException {
+	public static Map<String, ReactionsGPR_CI> runGPRsAssignment(double threshold, Connection conn) throws SQLException {
 
-		Connection conn = this.dba.openConnection();
-		Statement stmt = conn.createStatement();
 
-		ResultSet rs = stmt.executeQuery("SELECT DISTINCT reaction, enzyme_ecnumber, definition, idgene, " +
-				" orthology.entry_id, locusTag, gene.name, note, similarity " +
-				" FROM module" +
-				" INNER JOIN subunit ON (subunit.module_id = module.id)" +
-				" INNER JOIN module_has_orthology ON (module_has_orthology.module_id = module.id)"+
-				" INNER JOIN orthology ON (module_has_orthology.orthology_id = orthology.id)"+
-				" INNER JOIN gene_has_orthology ON (gene_has_orthology.orthology_id = module_has_orthology.orthology_id AND gene_has_orthology.gene_idgene = subunit.gene_idgene)" +
-				" INNER JOIN gene ON (gene_has_orthology.gene_idgene = gene.idgene)" 
-				//+" WHERE similarity >= "+threshold				
-				);
-
-		Map<String, ReactionsGPR_CI> rpgs = new HashMap<>();
-
-		while (rs.next()) {
-
-			if(rs.getString("note")==null || !rs.getString("note").equalsIgnoreCase("unannotated") || (rs.getString("note").equalsIgnoreCase("unannotated") && rs.getDouble("similarity")>=threshold)) {
-
-				ReactionsGPR_CI rpg = new ReactionsGPR_CI(rs.getString(1));
-
-				if(rpgs.containsKey(rs.getString(1)))
-					rpg  = rpgs.get(rs.getString(1));
-
-				{
-					ProteinsGPR_CI pga = new ProteinsGPR_CI(rs.getString(2), rs.getString(3));
-					pga.addSubunit(rs.getString(3).split(" OR "));
-
-					if(rpg.getProteins()!= null && rpg.getProteins().containsKey(rs.getString(2)))
-						pga = rpg.getProteins().get(rs.getString(2));
-
-					String geneSurrogateName = rs.getString(6);
-
-					if(rs.getString(7)!=null && !rs.getString(7).isEmpty() && !rs.getString(7).equalsIgnoreCase("null"))
-						geneSurrogateName = rs.getString(7)+"_"+geneSurrogateName;
-
-					pga.addLocusTag(rs.getString(5), geneSurrogateName);
-
-					rpg.addProteinGPR_CI(pga);
-				}
-
-				rpgs.put(rpg.getReaction(), rpg);
-			}
-		}
-
-		this.dba.closeConnection(conn);
-		return rpgs;
+		return ModelAPI.runGPRsAssignment(threshold, conn);
 	}
 
 	/**
@@ -333,113 +258,7 @@ public class IdentifyGenomeSubunits {
 		return false;
 	}
 
-	/**
-	 * @param conn
-	 * @param result
-	 * @throws SQLException
-	 */
-	public static Map<String, Set<String>> loadModule(Connection conn, Map<String, List<ReactionProteinGeneAssociation>> result) throws SQLException {
 
-		Map<String, Set<String>> genes_ko_modules = new HashMap<>();
-
-		Statement stmt = conn.createStatement();
-
-		for(String reaction: result.keySet()) {
-
-			for(int i=0; i<result.get(reaction).size(); i++) {
-
-				for(String p : result.get(reaction).get(i).getProteinGeneAssociation().keySet()) {
-
-					List<GeneAssociation> genes_list = result.get(reaction).get(i).getProteinGeneAssociation().get(p).getGenes();
-
-					String definition = "";
-
-					for(int index_list = 0; index_list< genes_list.size(); index_list++) {
-
-						GeneAssociation g = genes_list.get(index_list);
-
-						if(index_list!=0)
-							definition += " OR ";
-
-						for(int index = 0; index< g.getGenes().size(); index++) {
-
-							String gene  = g.getGenes().get(index);
-
-							if(index!=0)
-								definition += " AND ";  
-
-							definition += gene;
-						}
-					}
-
-					for(GeneAssociation geneAssociation : genes_list) {
-
-						for(ModuleCI mic : geneAssociation.getModules().values()) {
-
-							ResultSet rs = stmt.executeQuery("SELECT id, definition FROM module WHERE entry_id='"+mic.getModule()+"' AND reaction='"+reaction+"' AND definition ='"+definition+"'");
-
-							if(!rs.next()) {
-
-								stmt.execute("INSERT INTO module (reaction, entry_id, name, definition, type) " +
-										"VALUES ('"+reaction+"', '"+mic.getModule()+"', '"+mic.getName()+"', '"+definition+"', '"+mic.getModuleType().toString()+"')");
-								rs = stmt.executeQuery("SELECT LAST_INSERT_ID();");
-								rs.next();
-							}
-
-							String idModule = rs.getString(1);
-
-							for(String gene : geneAssociation.getGenes()) {
-
-								rs = stmt.executeQuery("SELECT * FROM orthology WHERE entry_id='"+gene+"'");
-
-								boolean noEntry = true;
-								Set<Integer> ids = new HashSet<>();
-
-								while(rs.next()) {
-
-									noEntry = false;
-									ids.add(rs.getInt(1));
-								}
-
-								if(noEntry) { 
-
-									stmt.execute("INSERT INTO orthology (entry_id) VALUES('"+gene+"')");
-									rs = stmt.executeQuery("SELECT LAST_INSERT_ID();");
-									rs.next();
-									ids.add(rs.getInt(1));
-								}
-
-								for (int idGene : ids) {
-
-									rs = stmt.executeQuery("SELECT * FROM module_has_orthology WHERE module_id="+idModule+" AND orthology_id = "+idGene+"");
-
-									if(!rs.next()) {
-
-										stmt.execute("INSERT INTO module_has_orthology (module_id, orthology_id) VALUES('"+idModule+"', '"+idGene+"')");
-										rs = stmt.executeQuery("SELECT LAST_INSERT_ID();");
-										rs.next();
-									}
-
-									Set<String> modules = new HashSet<>();
-
-									if(genes_ko_modules.containsKey(gene))
-										modules = genes_ko_modules.get(gene);
-
-									modules.add(idModule);
-									genes_ko_modules.put(gene, modules);
-								}
-							}
-							rs.close();
-						}
-					}
-				}
-			}
-		}
-
-		stmt.close();
-		stmt=null;
-		return genes_ko_modules;
-	}
 
 	/**
 	 * @return
@@ -460,149 +279,13 @@ public class IdentifyGenomeSubunits {
 
 
 	/**
-	 * @param dba
-	 * @return
-	 * @throws SQLException 
-	 */
-	public static Set<String> getECNumbersWithModules(Connection conn) throws SQLException {
-
-		Set<String> ec_numbers = new HashSet<>();
-
-		Statement stmt = conn.createStatement();
-
-		ResultSet rs = stmt.executeQuery("SELECT DISTINCT(enzyme_ecnumber) FROM subunit WHERE gpr_status = '"+DatabaseProgressStatus.PROCESSED+"'");
-
-		while(rs.next())
-			ec_numbers.add(rs.getString(1));
-
-			rs.close();
-		stmt.close();
-
-		return ec_numbers;
-	}
-
-	/**
 	 * @param conn
 	 * @param ec_number
 	 * @throws SQLException 
 	 */
 	public static void setSubunitProcessed(Connection conn, String ec_number) throws SQLException {
 
-		IdentifyGenomeSubunits.updateECNumberStatus(conn, ec_number,DatabaseProgressStatus.PROCESSED);
-
-	}
-
-
-	/**
-	 * @param conn
-	 * @param ec_number
-	 * @param module_id
-	 * @param note
-	 * @throws SQLException
-	 */
-	public static void updateECNumberNote(Connection conn, String ec_number, int module_id, String note) throws SQLException {
-
-		Statement stmt = conn.createStatement();
-
-		String string = "";
-		boolean update = true, notExists = true;
-
-		if(module_id > 0 ) {
-
-			string = ",module_id ="+module_id;
-
-			ResultSet rs = stmt.executeQuery("SELECT module_id FROM subunit WHERE enzyme_ecnumber = '"+ec_number+"'");
-
-			while (rs.next()) {
-
-				if(rs.getInt(1)>0) {
-
-					update=false;
-
-					if(rs.getInt(1)==module_id)
-						notExists = false;
-
-				}
-			}
-		}
-
-		if(update)
-			stmt.execute("UPDATE subunit SET note = '"+note+"'" +string +" WHERE enzyme_ecnumber='"+ec_number+"'");
-		else
-			if(notExists) {
-
-				ResultSet rs = stmt.executeQuery("SELECT DISTINCT gene_idgene, enzyme_protein_idprotein FROM subunit WHERE enzyme_ecnumber = '"+ec_number+"'");
-
-				Set<Pair<String,String>> genes_proteins = new HashSet<Pair<String,String>>();
-
-				while (rs.next()) {
-
-					Pair<String,String> pair = new Pair<>(rs.getString(1), rs.getString(2));
-
-					genes_proteins.add(pair);
-				}
-
-				for(Pair<String,String> pair : genes_proteins) {
-
-					stmt.execute("INSERT INTO subunit (gene_idgene, enzyme_protein_idprotein, enzyme_ecnumber, note, module_id) VALUES(" + pair.getA() + ", "+pair.getB() + ", '"+ec_number+"', '"+note+"'," +module_id+")");
-
-				}
-			}
-
-		stmt.close();
-	}
-
-	/**
-	 * @param conn
-	 * @param ec_number
-	 * @throws SQLException
-	 */
-	public static void updateECNumberStatus(Connection conn, String ec_number, DatabaseProgressStatus status) throws SQLException {
-
-		Statement stmt = conn.createStatement();
-
-		stmt.execute("UPDATE subunit SET gpr_status = '"+status+"' WHERE enzyme_ecnumber='"+ec_number+"'");
-
-		stmt.close();
-	}
-
-	/**
-	 * @param dba
-	 * @param originalReactions 
-	 * @return
-	 * @throws SQLException
-	 */
-	public static Map<String, List<String>> getECNumbers(DatabaseAccess dba) throws SQLException {
-
-		Map<String, List<String>> ec_numbers = new HashMap<>();
-
-		Connection conn = dba.openConnection();
-		Statement stmt = conn.createStatement();
-
-		ResultSet rs = stmt.executeQuery("SELECT locusTag, enzyme_ecnumber FROM subunit " +
-				"INNER JOIN gene ON (gene.idgene = gene_idgene)"
-				);
-
-		while(rs.next()) {
-
-			List<String> genes = new ArrayList<>();
-
-			String gene = rs.getString(1);
-			String enzyme = rs.getString(2);
-
-			if(ec_numbers.containsKey(enzyme))
-				genes = ec_numbers.get(enzyme);
-
-			genes.add(gene);
-
-			ec_numbers.put(enzyme, genes);
-
-		}
-		rs.close();
-		stmt.close();
-		dba.closeConnection(conn);
-
-		return ec_numbers;
+		ModelAPI.updateECNumberStatus(conn, ec_number,DatabaseProgressStatus.PROCESSED.toString());
 	}
 
 	/**
@@ -613,4 +296,11 @@ public class IdentifyGenomeSubunits {
 		this.progress = progress;
 	}
 
+
+	@Override
+	public void update(Observable arg0, Object arg1) {
+
+		setChanged();
+		notifyObservers();
+	}
 }

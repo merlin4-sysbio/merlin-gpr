@@ -9,9 +9,11 @@ import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.io.FastaReaderHelper;
 import org.junit.Test;
 
+import pt.uminho.sysbio.common.database.connector.databaseAPI.ModelAPI;
+import pt.uminho.sysbio.common.database.connector.datatypes.Connection;
 import pt.uminho.sysbio.common.database.connector.datatypes.DatabaseAccess;
 import pt.uminho.sysbio.common.database.connector.datatypes.MySQLDatabaseAccess;
-import pt.uminho.sysbio.common.local.alignments.core.Run_Similarity_Search.Method;
+import pt.uminho.sysbio.common.local.alignments.core.Enumerators.Method;
 import pt.uminho.sysbio.merlin.gpr.rules.core.FilterModelReactions;
 import pt.uminho.sysbio.merlin.gpr.rules.core.IdentifyGenomeSubunits;
 
@@ -47,7 +49,7 @@ public class GprTests {
 				AtomicBoolean cancel = new AtomicBoolean(false);
 				Method method = Method.SmithWaterman;
 
-				Map<String, List<String>> ec_numbers = IdentifyGenomeSubunits.getECNumbers(msqlmt);
+				Map<String, List<String>> ec_numbers = ModelAPI.getECNumbers(new Connection(msqlmt));
 				System.out.println("Enzymes size:\t"+ec_numbers.keySet().size());
 
 				Map<String, ProteinSequence> genome =  FastaReaderHelper.readFastaProteinSequence(new File(file));
@@ -57,16 +59,15 @@ public class GprTests {
 				System.out.println("Genome size:\t"+newGenome.keySet().size());
 
 				IdentifyGenomeSubunits i = new IdentifyGenomeSubunits(ec_numbers, newGenome, reference_organism_id, msqlmt, similarity_threshold, 
-						referenceTaxonomyThreshold, method, cancel, compareToFullGenome);
+						referenceTaxonomyThreshold, method, compareToFullGenome, cancel);
 				i.runIdentification();
 
 			}
 			else {
 
-				IdentifyGenomeSubunits i = new IdentifyGenomeSubunits(msqlmt);
 
 				FilterModelReactions f = new FilterModelReactions(msqlmt, originalReaction);
-				f.filterReactions(i.runAssignment(threshold));
+				f.filterReactions(IdentifyGenomeSubunits.runGPRsAssignment(threshold, new Connection(msqlmt)));
 
 				if(integrateToDatabase) {
 

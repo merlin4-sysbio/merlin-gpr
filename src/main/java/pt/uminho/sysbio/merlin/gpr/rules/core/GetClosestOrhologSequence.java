@@ -257,4 +257,5 @@ public class GetClosestOrhologSequence {
 	public void setOrthologsSequences(ConcurrentHashMap<String, Map<String, List<String>>> orthologsSequences) {
 		this.orthologsSequences = orthologsSequences;
 	}
+
 }

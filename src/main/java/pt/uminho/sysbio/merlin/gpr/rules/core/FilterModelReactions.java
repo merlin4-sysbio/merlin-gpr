@@ -12,12 +12,12 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pt.uminho.sysbio.common.database.connector.databaseAPI.containers.gpr.ReactionsGPR_CI;
 import pt.uminho.sysbio.common.database.connector.datatypes.Connection;
 import pt.uminho.sysbio.common.database.connector.datatypes.DatabaseAccess;
 import pt.uminho.sysbio.common.database.connector.datatypes.H2DatabaseAccess;
 import pt.uminho.sysbio.common.database.connector.datatypes.MySQLDatabaseAccess;
 import pt.uminho.sysbio.common.database.connector.datatypes.Enumerators.DatabaseType;
-import pt.uminho.sysbio.merlin.gpr.rules.core.output.ReactionsGPR_CI;
 
 /**
  * @author ODias
