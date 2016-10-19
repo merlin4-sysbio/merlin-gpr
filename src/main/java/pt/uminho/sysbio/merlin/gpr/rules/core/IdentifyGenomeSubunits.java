@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.biojava.nbio.alignment.Alignments.PairwiseSequenceScorerType;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,6 @@ import pt.uminho.sysbio.common.database.connector.databaseAPI.containers.gpr.Rea
 import pt.uminho.sysbio.common.database.connector.datatypes.Connection;
 import pt.uminho.sysbio.common.database.connector.datatypes.DatabaseAccess;
 import pt.uminho.sysbio.common.local.alignments.core.Enumerators.Method;
-import pt.uminho.sysbio.common.local.alignments.core.Enumerators.ThresholdType;
 import pt.uminho.sysbio.common.local.alignments.core.PairwiseSequenceAlignement;
 import pt.uminho.sysbio.common.local.alignments.core.RunSimilaritySearch;
 import pt.uminho.sysbio.merlin.utilities.DatabaseProgressStatus;
@@ -177,7 +177,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 						if(orthologs.size()>0 && !this.cancel.get()) {
 
 							RunSimilaritySearch search = new RunSimilaritySearch(this.dba, this.genome, this.similarity_threshold, 
-									this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(0), -1, ThresholdType.ALIGNMENT);
+									this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(0), -1, PairwiseSequenceScorerType.LOCAL_IDENTITIES);
 
 							//search.addObserver(this);
 							search.setEc_number(ec_number);

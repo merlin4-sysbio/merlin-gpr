@@ -100,7 +100,7 @@ public class GetClosestOrhologSequence {
 	 */
 	private Set<String> getGenesForOrtholog() throws Exception {
 
-		String[] findGenes = KeggAPI.findGenes(ko.trim());
+		String[] findGenes = KeggAPI.findGenesFromKO(ko.trim());
 
 		ConcurrentLinkedQueue<String> genes = new ConcurrentLinkedQueue<>();
 
