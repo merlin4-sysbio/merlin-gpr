@@ -1,12 +1,13 @@
 package tests;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.io.FastaReaderHelper;
+import org.biojava.nbio.core.sequence.template.AbstractSequence;
 import org.junit.Test;
 
 import pt.uminho.sysbio.common.database.connector.databaseAPI.ModelAPI;
@@ -52,9 +53,10 @@ public class GprTests {
 				Map<String, List<String>> ec_numbers = ModelAPI.getECNumbers(new Connection(msqlmt));
 				System.out.println("Enzymes size:\t"+ec_numbers.keySet().size());
 
-				Map<String, ProteinSequence> genome =  FastaReaderHelper.readFastaProteinSequence(new File(file));
+				Map<String, AbstractSequence<?>> genome =  new HashMap<>();
+				genome.putAll(FastaReaderHelper.readFastaProteinSequence(new File(file)));
 
-				Map<String, ProteinSequence> newGenome = genome;
+				Map<String, AbstractSequence<?>> newGenome = genome;
 
 				System.out.println("Genome size:\t"+newGenome.keySet().size());
 

@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.biojava.nbio.core.sequence.ProteinSequence;
+import org.biojava.nbio.core.sequence.template.AbstractSequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +44,9 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 	private static final Logger logger = LoggerFactory.getLogger(IdentifyGenomeSubunits.class);
 
 	private Map<String, List<String>> ecNumbers;
-	private Map<String, ProteinSequence> genome;
+	private Map<String, AbstractSequence<?>> genome;
 	private long reference_organism_id;
-	private ConcurrentHashMap<String, ProteinSequence> sequences;
+	private ConcurrentHashMap<String, AbstractSequence<?>> sequences;
 	private ConcurrentHashMap<String, Set<String>> closestOrtholog;
 	private DatabaseAccess dba;
 	private double similarity_threshold;
@@ -70,7 +70,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 	 * @param compareToFullGenome
 	 * @param cancel
 	 */
-	public IdentifyGenomeSubunits(Map<String, List<String>> ec_numbers, Map<String, ProteinSequence> genome, long reference_organism_id, 
+	public IdentifyGenomeSubunits(Map<String, List<String>> ec_numbers, Map<String, AbstractSequence<?>> genome, long reference_organism_id, 
 			DatabaseAccess dba, double similarity_threshold, double referenceTaxonomyThreshold, Method method, 
 			boolean compareToFullGenome, AtomicBoolean cancel) {
 
@@ -131,7 +131,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 						Map<String, Set<String>> genes_ko_modules = ModelAPI.loadModule(conn, result);
 						logger.info("Genes, KO, modules \t{}",genes_ko_modules);
 
-						ConcurrentHashMap<String, ProteinSequence> orthologs = new ConcurrentHashMap<>();
+						ConcurrentHashMap<String, AbstractSequence<?>> orthologs = new ConcurrentHashMap<>();
 						boolean noOrthologs = true;
 
 						for(String ko : genes_ko_modules.keySet()) { 

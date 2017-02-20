@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.biojava.nbio.core.sequence.ProteinSequence;
+import org.biojava.nbio.core.sequence.template.AbstractSequence;
 
 import pt.uminho.sysbio.common.bioapis.externalAPI.kegg.KeggAPI;
 
@@ -17,7 +18,7 @@ import pt.uminho.sysbio.common.bioapis.externalAPI.kegg.KeggAPI;
  */
 public class GetClosestOrhologSequence {
 
-	private ConcurrentHashMap<String, ProteinSequence> sequences;
+	private ConcurrentHashMap<String, AbstractSequence<?>> sequences;
 	private ConcurrentHashMap<String, Set<String>> closestOrtholog;
 	private Map<String, String> kegg_taxonomy_ids;
 	private ConcurrentHashMap<String, Integer> ncbi_taxonomy_ids;
@@ -37,7 +38,7 @@ public class GetClosestOrhologSequence {
 	 * @param orthologsSequences
 	 * @throws Exception
 	 */
-	public GetClosestOrhologSequence(String ko, List<String> referenceTaxonomy, ConcurrentHashMap<String, ProteinSequence> sequences,
+	public GetClosestOrhologSequence(String ko, List<String> referenceTaxonomy, ConcurrentHashMap<String, AbstractSequence<?>> sequences,
 			Map<String, String> kegg_taxonomy_ids, ConcurrentHashMap<String, Integer> ncbi_taxonomy_ids,
 			ConcurrentHashMap<String, Integer> kegg_taxonomy_scores, ConcurrentHashMap<String, Set<String>> closestOrtholog, 
 			ConcurrentHashMap<String,Map<String,List<String>>> orthologsSequences) throws Exception {
@@ -184,7 +185,7 @@ public class GetClosestOrhologSequence {
 	/**
 	 * @return the sequences
 	 */
-	public ConcurrentHashMap<String, ProteinSequence> getSequences() {
+	public ConcurrentHashMap<String, AbstractSequence<?>> getSequences() {
 		return sequences;
 	}
 
@@ -192,7 +193,7 @@ public class GetClosestOrhologSequence {
 	/**
 	 * @param sequences the sequences to set
 	 */
-	public void setSequences(ConcurrentHashMap<String, ProteinSequence> sequences) {
+	public void setSequences(ConcurrentHashMap<String, AbstractSequence<?>> sequences) {
 		this.sequences = sequences;
 	}
 
