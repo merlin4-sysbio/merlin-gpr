@@ -177,7 +177,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 						if(orthologs.size()>0 && !this.cancel.get()) {
 
 							RunSimilaritySearch search = new RunSimilaritySearch(this.dba, this.genome, this.similarity_threshold, 
-									this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(0), -1, AlignmentScoreType.IDENTITY);
+									this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(0), -1, AlignmentScoreType.SIMILARITY);
 
 							//search.addObserver(this);
 							search.setEc_number(ec_number);
