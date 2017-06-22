@@ -1,5 +1,6 @@
 package pt.uminho.sysbio.merlin.gpr.rules.core;
 
+import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,6 +13,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pt.uminho.ceb.biosystems.mew.utilities.io.FileUtils;
 import pt.uminho.sysbio.common.database.connector.databaseAPI.containers.gpr.ReactionsGPR_CI;
 import pt.uminho.sysbio.common.database.connector.datatypes.Connection;
 import pt.uminho.sysbio.common.database.connector.datatypes.DatabaseAccess;
@@ -44,11 +46,12 @@ public class FilterModelReactions {
 	 * @param originalReactions
 	 */
 	public FilterModelReactions(String user, String password, String server, int port, String database, boolean originalReactions) {
-
+		
+		String path = new File(FileUtils.getCurrentDirectory()).getParentFile().getParent();
 		if (this.database_type.equals(DatabaseType.MYSQL)) {
-			this.dba = new MySQLDatabaseAccess(user, password, server, port, database);
+			this.dba = new MySQLDatabaseAccess(user, password, server, port, database, path);
 		}else{
-			this.dba = new H2DatabaseAccess(user, password, database);
+			this.dba = new H2DatabaseAccess(user, password, database, path);
 		}
 
 		new FilterModelReactions(dba, originalReactions);
