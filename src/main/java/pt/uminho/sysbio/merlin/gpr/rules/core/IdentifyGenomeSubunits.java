@@ -55,6 +55,8 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 	private double referenceTaxonomyThreshold;
 	private boolean compareToFullGenome;
 	private TimeLeftProgress progress;
+	private ConcurrentHashMap<String, String[]> alignmentResults;
+
 
 
 	/**
@@ -230,6 +232,127 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 			throw e;
 		}
 		return ret;
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	public boolean runGapsIdentification(ConcurrentHashMap<String, String[]> alignmentResults) throws Exception {
+
+		this.alignmentResults = alignmentResults;
+		boolean ret = true;
+
+		try {
+
+			this.sequences = new ConcurrentHashMap<>();
+			this.closestOrtholog = new ConcurrentHashMap<>();
+
+			List<String> referenceTaxonomy = NcbiAPI.getReferenceTaxonomy(reference_organism_id);
+			logger.info("Reference taxonomy set to {}", referenceTaxonomy);
+
+			ConcurrentHashMap<String, Integer> ncbi_taxonomy_ids = new ConcurrentHashMap<>();
+			ConcurrentHashMap<String, Integer> kegg_taxonomy_scores = new ConcurrentHashMap<>();
+			ConcurrentHashMap<String, Map<String, List<String>>> orthologsSequences = new ConcurrentHashMap<>();;
+
+			kegg_taxonomy_scores.put("noOrg", 0);
+			Map<String, String> kegg_taxonomy_ids = IdentifyGenomeSubunits.getKeggTaxonomyIDs();
+
+			Connection conn = new Connection(this.dba);
+
+			long startTime = GregorianCalendar.getInstance().getTimeInMillis();
+
+			List<String> iterator = new ArrayList<>(this.ecNumbers.keySet());
+
+			for(int i = 0; i<iterator.size(); i++) {
+
+				String ec_number = iterator.get(i);
+
+				List<String> kos =	AssembleGPR.getOrthologsByECnumber(ec_number);
+
+				if(!this.cancel.get()) {
+
+					try {
+
+						ConcurrentHashMap<String, AbstractSequence<?>> orthologs = new ConcurrentHashMap<>();
+
+						if(!this.cancel.get()){
+
+							for(String ko : kos) {
+
+								List<String> locusTags = ModelAPI.checkDatabase(conn, ko);
+
+								if(locusTags.isEmpty()) {
+
+									GetClosestOrhologSequence seq = new GetClosestOrhologSequence(ko, referenceTaxonomy, this.sequences, kegg_taxonomy_ids,
+											ncbi_taxonomy_ids, kegg_taxonomy_scores, this.closestOrtholog, orthologsSequences );
+									seq.run();
+									System.out.println("closet"+this.closestOrtholog);
+									Set<String> orthologsID = this.closestOrtholog.get(ko);
+
+									for(String gene : orthologsID)
+										orthologs.put(gene, this.sequences.get(gene));
+								}
+								else {
+
+									Map<String, Set<String>> temp = ModelAPI.getOrthologs(ko, conn);
+
+								}
+							}
+						}
+						logger.info("Orthologs to be searched in genome:\t{}",orthologs.keySet());
+
+
+
+						if(orthologs.size()>0 && !this.cancel.get()) {
+
+							RunSimilaritySearch search = new RunSimilaritySearch(this.dba, this.genome, this.similarity_threshold, 
+									this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(0), -1, AlignmentScoreType.ALIGNMENT);
+
+							//search.addObserver(this);
+							search.setEc_number(ec_number);
+							search.setClosestOrthologs(MapUtils.revertMapFromSet(this.closestOrtholog));
+							search.setReferenceTaxonomyScore(referenceTaxonomy.size());
+							search.setKegg_taxonomy_scores(kegg_taxonomy_scores);
+							search.setAnnotatedGenes(this.ecNumbers.get(ec_number));
+							search.setReferenceTaxonomyThreshold(this.referenceTaxonomyThreshold);
+							search.setCompareToFullGenome(this.compareToFullGenome);
+							search.run_OrthologGapsSearch(alignmentResults);
+						}
+						
+						for(String ko :  alignmentResults.keySet())
+							System.out.println(ko+"\t"+alignmentResults.get(ko)[0]+"\t"+alignmentResults.get(ko)[1]+"\t"+alignmentResults.get(ko)[2]+"\t"+alignmentResults.get(ko)[3]);
+
+					}
+					catch (Exception e) {
+
+						ModelAPI.updateECNumberStatus(conn, ec_number, DatabaseProgressStatus.PROCESSING.toString());
+						ret = false;
+						logger.error("error {}",e.getMessage());
+					}
+				}
+				
+				if(cancel.get())
+					i = iterator.size();
+
+				if(this.progress!=null)
+					progress.setTime(GregorianCalendar.getInstance().getTimeInMillis() - startTime, i, iterator.size());
+			}
+			conn.closeConnection();
+		} 
+		catch (Exception e) {
+
+			ret = false;
+			e.printStackTrace();
+			logger.error("{}\n{}", e.getMessage(), e);
+			throw e;
+		}
+		return ret;
+	}
+
+	public ConcurrentHashMap<String, String[]> getAlignmentResults(){
+		
+		return alignmentResults;
+			
 	}
 
 	/**

@@ -66,7 +66,7 @@ public class AssembleGPR {
 	 */
 	public Map<String,List<ReactionProteinGeneAssociation>> run() throws Exception {
 
-		this.getOrthologsByECnumber();
+		this.orthologsEnzymes.addAll(AssembleGPR.getOrthologsByECnumber(this.ec_number));
 
 		if(this.isPartialECnumber)
 			this.getReactionsByOrthologue();
@@ -84,10 +84,11 @@ public class AssembleGPR {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<String> getOrthologsByECnumber() throws Exception {
+	public static List<String> getOrthologsByECnumber(String ec_number) throws Exception {
 
 		List<String> orthologs_temp = KeggAPI.getOrthologsByECnumber(ec_number);
-
+		List<String> orthologsEnzymes = new ArrayList<>();
+		
 		for(String ko : orthologs_temp) {
 
 			StringTokenizer sTok = new StringTokenizer(ko,"ko:");
@@ -98,12 +99,12 @@ public class AssembleGPR {
 				Matcher matcher = pattern.matcher(tok);
 				if (matcher.find()) {
 
-					this.orthologsEnzymes.add(matcher.group());
+					orthologsEnzymes.add(matcher.group());
 				}
 			}
 		}
 
-		return this.orthologsEnzymes;
+		return orthologsEnzymes;
 	}
 
 	/**
