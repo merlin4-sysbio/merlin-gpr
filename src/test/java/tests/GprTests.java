@@ -10,7 +10,6 @@ import org.biojava.nbio.core.sequence.io.FastaReaderHelper;
 import org.biojava.nbio.core.sequence.template.AbstractSequence;
 import org.junit.Test;
 
-import pt.uminho.ceb.biosystems.mew.utilities.io.FileUtils;
 import pt.uminho.sysbio.common.database.connector.databaseAPI.ModelAPI;
 import pt.uminho.sysbio.common.database.connector.datatypes.Connection;
 import pt.uminho.sysbio.common.database.connector.datatypes.DatabaseAccess;
@@ -44,7 +43,7 @@ public class GprTests {
 
 			boolean originalReaction = false;
 
-			DatabaseAccess msqlmt = new MySQLDatabaseAccess(user, password, server, port, database, new File(FileUtils.getCurrentDirectory()).getParentFile().getParent());
+			DatabaseAccess msqlmt = new MySQLDatabaseAccess(user, password, server, port, database);
 
 			if(identifyOrAssign) {
 

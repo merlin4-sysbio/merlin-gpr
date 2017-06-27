@@ -47,11 +47,10 @@ public class FilterModelReactions {
 	 */
 	public FilterModelReactions(String user, String password, String server, int port, String database, boolean originalReactions) {
 		
-		String path = new File(FileUtils.getCurrentDirectory()).getParentFile().getParent();
 		if (this.database_type.equals(DatabaseType.MYSQL)) {
-			this.dba = new MySQLDatabaseAccess(user, password, server, port, database, path);
+			this.dba = new MySQLDatabaseAccess(user, password, server, port, database);
 		}else{
-			this.dba = new H2DatabaseAccess(user, password, database, path);
+			this.dba = new H2DatabaseAccess(user, password, database, null);
 		}
 
 		new FilterModelReactions(dba, originalReactions);
