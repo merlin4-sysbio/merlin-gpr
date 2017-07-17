@@ -391,10 +391,9 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 		Map<String, String> kegg_taxonomy_ids = new HashMap<>();
 		List<String[]> organisms = KeggAPI.getGenomes();
-		for(String[] org : organisms) {
-
+		
+		for(String[] org : organisms)
 			kegg_taxonomy_ids.put(org[0], org[1]);
-		}
 
 		return kegg_taxonomy_ids;
 	}
