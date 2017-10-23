@@ -1,10 +1,9 @@
 package pt.uminho.sysbio.merlin.gpr.rules.core;
 
-import java.io.File;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -13,7 +12,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pt.uminho.ceb.biosystems.mew.utilities.io.FileUtils;
+import pt.uminho.sysbio.common.database.connector.databaseAPI.ModelAPI;
 import pt.uminho.sysbio.common.database.connector.databaseAPI.containers.gpr.ReactionsGPR_CI;
 import pt.uminho.sysbio.common.database.connector.datatypes.Connection;
 import pt.uminho.sysbio.common.database.connector.datatypes.DatabaseAccess;
@@ -86,22 +85,22 @@ public class FilterModelReactions {
 
 		Statement stmt = conn.createStatement();
 
-		ResultSet rs = stmt.executeQuery("SELECT * FROM reaction " +
-				"INNER JOIN reaction_has_enzyme  ON (reaction_idreaction = reaction.idreaction) " +
-				" WHERE reaction.inModel AND originalReaction="+this.originalReactions
-				);
-
-		while (rs.next()) {
-
+		ArrayList<String[]> result = ModelAPI.getReactionsFromModel(stmt, this.originalReactions);
+		String [] list;
+		
+		for(int i=0; i<result.size(); i++) {	
+			
+			list = result.get(i);
+			
 			Set<String> reactions = new HashSet<>();
 
-			if(this.databaseEnzymesReactions.containsKey(rs.getString("enzyme_ecnumber")))
-				reactions = this.databaseEnzymesReactions.get(rs.getString("enzyme_ecnumber"));
+			if(this.databaseEnzymesReactions.containsKey(list[1]))
+				reactions = this.databaseEnzymesReactions.get(list[1]);
 
-			reactions.add(rs.getString("name"));
-			ret.add(rs.getString("name"));
+			reactions.add(list[0]);
+			ret.add(list[0]);
 
-			this.databaseEnzymesReactions.put(rs.getString("enzyme_ecnumber"), reactions);
+			this.databaseEnzymesReactions.put(list[1], reactions);
 		}
 		conn.closeConnection();
 		return ret;
@@ -231,11 +230,12 @@ public class FilterModelReactions {
 
 		for (String name : this.removed) {
 
-			ResultSet rs = stmt.executeQuery("SELECT notes, isSpontaneous, isNonEnzymatic, source FROM reaction  WHERE reaction.name='"+name+"'");
-
-			if(rs.next()) {
-
-				String old_note = rs.getString(1);
+//			ResultSet rs = stmt.executeQuery("SELECT notes, isSpontaneous, isNonEnzymatic, source FROM reaction  WHERE reaction.name='"+name+"'");
+			String[] result = ModelAPI.getReactionsInfo(stmt, name);
+					
+			if(result.length>0) {
+				
+				String old_note = result[0];
 
 				if(old_note!=null && !old_note.isEmpty()) {
 
@@ -266,12 +266,10 @@ public class FilterModelReactions {
 						notes_map.put(name, old_note);
 					}
 				}
-
-
-				if(rs.getBoolean(2) || rs.getBoolean(3))
+				if(Boolean.valueOf(result[1]) || Boolean.valueOf(result[2]))
 					reactionsToKeep.add(name);
 
-				if(keepManualReactions && rs.getString(4).equalsIgnoreCase("MANUAL"))
+				if(keepManualReactions && result[3].equalsIgnoreCase("MANUAL"))
 					reactionsToKeep.add(name);
 			}
 		}
@@ -280,36 +278,10 @@ public class FilterModelReactions {
 		logger.debug("Removed notes\t"+notes_map);
 
 		java.sql.Connection conn = this.dba.openConnection();
+		
 		PreparedStatement statement = conn.prepareStatement("UPDATE reaction SET inModel=?, notes=? WHERE reaction.name=?");
-
-		int i = 0;
-		for (String name : this.removed) {
-
-			if(!reactionsToKeep.contains(name)) {
-
-				String note = "";
-
-				if(notes_map.containsKey(name)) {
-
-					note = notes_map.get(name)+ " | ";
-				}
-
-				note += "Removed by GPR tool";
-
-				statement.setString(1, "false");
-				statement.setString(2, note);
-				statement.setString(3, name);
-
-				statement.addBatch();
-
-				if ((i + 1) % 1000 == 0) {
-
-					statement.executeBatch(); // Execute every 1000 items.
-				}
-				i++;
-			}
-		}
-		statement.executeBatch();
+		
+		ModelAPI.removeReactionsFromModel(statement, this.removed, reactionsToKeep, notes_map);
 
 		conn.close();
 	}
@@ -319,92 +291,24 @@ public class FilterModelReactions {
 	 */
 	public void setModelGPRsFromTool() throws SQLException {
 
-		Map<String, String> notes_map = new HashMap<>();
-		Map<String, String> notes_map_new = new HashMap<>();
-
 		Connection connection = new Connection(this.dba);
 		Statement stmt = connection.createStatement();
 
-		for (String name : this.kept) {
+		Map<String, String> notes_map = ModelAPI.createNotesMap(stmt, this.kept);
 
-			ResultSet rs = stmt.executeQuery("SELECT notes FROM reaction WHERE reaction.name='"+name+"'");
-
-			if(rs.next() && rs.getString(1)!=null && !rs.getString(1).isEmpty())
-				notes_map.put(name, rs.getString(1));
-		}
-
-		for (String name : this.keptWithDifferentAnnotation) {
-
-			ResultSet rs = stmt.executeQuery("SELECT notes FROM reaction  WHERE reaction.name='"+name+"'");
-
-			if(rs.next() && rs.getString(1)!=null && !rs.getString(1).isEmpty())
-				notes_map_new.put(name, rs.getString(1));
-		}
-
+		Map<String, String> notes_map_new = ModelAPI.createNotesMap(stmt, this.keptWithDifferentAnnotation);
+		//notes_map_new não está a ser usado. Não se deveria usa-lo no updateReactionTableWithDifferentAnnotation???
+		
 		connection.closeConnection();
 
 		java.sql.Connection conn = this.dba.openConnection();
 
 		PreparedStatement statement = conn.prepareStatement("UPDATE reaction SET boolean_rule=?, notes=? WHERE reaction.name=?");
 
-		int i = 0;
-		for (String name : this.kept) {
+		ModelAPI.updateReactionTable(statement, this.kept, this.annotations, notes_map);
 
-			//String note = "GENE_ASSOCIATION: " + this.annotations.get(name)+" | GPR set from tool";
-			String note = this.annotations.get(name);
-
-			String old_note = "GPR set from tool";
-			
-			if(notes_map.containsKey(name)) {
-				
-				old_note = notes_map.get(name);
-
-				if(!old_note.contains("GPR set from tool"))
-					old_note = old_note.trim().concat(" | GPR set from tool");
-			}
-
-			statement.setString(1, note);
-			statement.setString(2, old_note);
-			statement.setString(3, name);
-			statement.addBatch();
-
-			if ((i + 1) % 1000 == 0) {
-
-				statement.executeBatch(); // Execute every 1000 items.
-			}
-			i++;
-		}
-		statement.executeBatch();
-
-		i = 0;
-		for (String name : this.keptWithDifferentAnnotation) {
-
-			//String note = "GENE_ASSOCIATION: " + this.annotations.get(name)+" | New Annotation. GPR set from tool.";
-			String note = this.annotations.get(name);
-
-			String old_note = "New Annotation. GPR set from tool";
-			
-			if(notes_map.containsKey(name)) {
-				
-				old_note = notes_map.get(name);
-
-				if(!old_note.contains("New Annotation. GPR set from tool"))
-					old_note = old_note.trim().concat(" | GPR set from tool");
-			}
-
-			statement.setString(1, note);
-			statement.setString(2, old_note);
-			statement.setString(3, name);
-			statement.addBatch();
-
-			if ((i + 1) % 1000 == 0) {
-
-				statement.executeBatch(); // Execute every 1000 items.
-			}
-			i++;
-		}
-		statement.executeBatch();
-
+		ModelAPI.updateReactionTableWithDifferentAnnotation(statement, this.keptWithDifferentAnnotation, this.annotations, notes_map);
+		
 		conn.close();
 	}
 }
