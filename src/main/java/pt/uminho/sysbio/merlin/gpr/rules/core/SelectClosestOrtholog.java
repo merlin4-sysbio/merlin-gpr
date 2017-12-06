@@ -51,9 +51,17 @@ public class SelectClosestOrtholog //implements Runnable
 
 		List<String> genesOrg  = new ArrayList<>();
 
-		for(String gene : this.genes)
-			genesOrg.add(this.kegg_taxonomy_ids.get(gene.split(":")[0]));
+//		for(String gene : this.genes)
+//			genesOrg.add(this.kegg_taxonomy_ids.get(gene.split(":")[0]));
 
+		for(String gene : this.genes){
+			
+			String taxID = this.kegg_taxonomy_ids.get(gene.split(":")[0]);
+			
+			if (taxID != null && !taxID.equals(""))
+				genesOrg.add(taxID);
+		}
+		
 		this.processTaxIds(genesOrg);
 	}
 
@@ -62,7 +70,7 @@ public class SelectClosestOrtholog //implements Runnable
 	 * @throws Exception
 	 */
 	private void processTaxIds(List<String> tax_ids_list) throws Exception {
-
+		
 		List<List<String>> lists = this.splitLists(tax_ids_list, 100);
 
 		for(List<String> tax_ids : lists) {
