@@ -62,7 +62,7 @@ public class GprTests {
 
 				IdentifyGenomeSubunits i = new IdentifyGenomeSubunits(ec_numbers, newGenome, reference_organism_id, msqlmt, similarity_threshold, 
 						referenceTaxonomyThreshold, method, compareToFullGenome, cancel);
-				i.runIdentification();
+				i.runIdentification(true);
 
 			}
 			else {
