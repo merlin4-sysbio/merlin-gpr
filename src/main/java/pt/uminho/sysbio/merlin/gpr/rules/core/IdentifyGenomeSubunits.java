@@ -121,9 +121,12 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 			Set<String> bypass = null;															//////
 
-			if(!gapsIdentification)														//////// provavelmente pode ser usado pelos gaps
-				bypass = ModelAPI.getECNumbersWithModules(conn);						///////// nao e usado nos gaps --> por dentro de condicao
+//			if(!gapsIdentification)														//////// provavelmente pode ser usado pelos gaps
+//				bypass = ModelAPI.getECNumbersWithModules(conn);		
+			///////// nao e usado nos gaps --> por dentro de condicao
 
+			bypass = ModelAPI.getECNumbersWithModules(conn);	
+			
 			long startTime = GregorianCalendar.getInstance().getTimeInMillis();
 
 			List<String> iterator = new ArrayList<>(this.ecNumbers.keySet());
@@ -144,7 +147,27 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 						Map<String, Set<String>> genes_ko_modules = new HashMap<>();
 
-						if(!gapsIdentification){
+						if(gapsIdentification){
+							List<String> kos =	AssembleGPR.getOrthologsByECnumber(ec_number);
+
+							for(String ko : kos) {
+
+								List<String> sequenceID = sequenceIdsSet.get(ko);
+
+								if(sequenceID == null || sequenceID.isEmpty()) {
+
+									GetClosestOrhologSequence seq = new GetClosestOrhologSequence(ko, referenceTaxonomy, this.sequences, kegg_taxonomy_ids,
+											ncbi_taxonomy_ids, kegg_taxonomy_scores, this.closestOrtholog, orthologsSequences );
+									seq.run();
+
+									Set<String> orthologsID = this.closestOrtholog.get(ko);
+
+									for(String gene : orthologsID)
+										orthologs.put(gene, this.sequences.get(gene));
+								}
+							}
+						}
+						else{
 
 							logger.info("Retrieving GPR for {} ...",ec_number);
 							AssembleGPR gpr = new AssembleGPR(ec_number);
@@ -171,26 +194,6 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 										for(String gene : this.closestOrtholog.get(ko))
 											orthologs.put(gene, this.sequences.get(gene));
 									}
-								}
-							}
-						}
-						else{
-							List<String> kos =	AssembleGPR.getOrthologsByECnumber(ec_number);
-
-							for(String ko : kos) {
-
-								List<String> sequenceID = sequenceIdsSet.get(ko);
-
-								if(sequenceID == null || sequenceID.isEmpty()) {
-
-									GetClosestOrhologSequence seq = new GetClosestOrhologSequence(ko, referenceTaxonomy, this.sequences, kegg_taxonomy_ids,
-											ncbi_taxonomy_ids, kegg_taxonomy_scores, this.closestOrtholog, orthologsSequences );
-									seq.run();
-
-									Set<String> orthologsID = this.closestOrtholog.get(ko);
-
-									for(String gene : orthologsID)
-										orthologs.put(gene, this.sequences.get(gene));
 								}
 							}
 						}
