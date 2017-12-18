@@ -29,7 +29,6 @@ import pt.uminho.sysbio.common.database.connector.databaseAPI.HomologyAPI;
 import pt.uminho.sysbio.common.database.connector.databaseAPI.ModelAPI;
 import pt.uminho.sysbio.common.database.connector.datatypes.Connection;
 import pt.uminho.sysbio.common.database.connector.datatypes.DatabaseAccess;
-import pt.uminho.sysbio.common.local.alignments.core.PairwiseSequenceAlignement;
 import pt.uminho.sysbio.common.local.alignments.core.RunSimilaritySearch;
 import pt.uminho.sysbio.merIin.utilities.capsules.AlignmentCapsule;
 import pt.uminho.sysbio.merlin.utilities.DatabaseProgressStatus;
@@ -59,7 +58,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 	private double referenceTaxonomyThreshold;
 	private boolean compareToFullGenome;
 	private TimeLeftProgress progress;
-	private ConcurrentLinkedQueue<AlignmentCapsule> alignmentResults;
+	private ConcurrentLinkedQueue<AlignmentCapsule> findGapsResult;
 
 
 
@@ -89,6 +88,8 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 		this.cancel = cancel;
 		this.referenceTaxonomyThreshold = referenceTaxonomyThreshold;
 		this.compareToFullGenome = compareToFullGenome;
+		this.findGapsResult = new ConcurrentLinkedQueue<AlignmentCapsule>();
+		
 	}
 	
 	
@@ -119,12 +120,11 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 			kegg_taxonomy_scores.put("noOrg", 0);
 			Map<String, String> kegg_taxonomy_ids = IdentifyGenomeSubunits.getKeggTaxonomyIDs();
 
-			Set<String> bypass = null;															//////
+			Set<String> bypass = null;
 
-//			if(!gapsIdentification)														//////// provavelmente pode ser usado pelos gaps
+//			if(!gapsIdentification)						
 //				bypass = ModelAPI.getECNumbersWithModules(conn);		
-			///////// nao e usado nos gaps --> por dentro de condicao
-
+			
 			bypass = ModelAPI.getECNumbersWithModules(conn);	
 			
 			long startTime = GregorianCalendar.getInstance().getTimeInMillis();
@@ -241,6 +241,8 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 										ModelAPI.updateECNumberNote(conn, ec_number, module_id, "no_similarities");
 								}
 							}
+							if(gapsIdentification)
+								this.findGapsResult.addAll(alignmentContainerSet);
 						}
 						else if(orthologs.size() == 0) {
 
@@ -534,9 +536,9 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 //		return ret;	
 //	}
 
-	public ConcurrentLinkedQueue<AlignmentCapsule> getAlignmentResults(){
+	public ConcurrentLinkedQueue<AlignmentCapsule> findGapsResult(){
 		
-		return alignmentResults;
+		return this.findGapsResult;
 			
 	}
 
