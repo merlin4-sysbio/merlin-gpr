@@ -299,16 +299,12 @@ public class FilterModelReactions {
 		Map<String, String> notes_map_new = ModelAPI.createNotesMap(stmt, this.keptWithDifferentAnnotation);
 		//notes_map_new não está a ser usado. Não se deveria usa-lo no updateReactionTableWithDifferentAnnotation???
 		
-		connection.closeConnection();
-
-		java.sql.Connection conn = this.dba.openConnection();
-
-		PreparedStatement statement = conn.prepareStatement("UPDATE reaction SET boolean_rule=?, notes=? WHERE reaction.name=?");
+		PreparedStatement statement = connection.prepareStatement("UPDATE reaction SET boolean_rule=?, notes=? WHERE reaction.name=?");
 
 		ModelAPI.updateReactionTable(statement, this.kept, this.annotations, notes_map);
 
 		ModelAPI.updateReactionTableWithDifferentAnnotation(statement, this.keptWithDifferentAnnotation, this.annotations, notes_map);
 		
-		conn.close();
+		connection.closeConnection();
 	}
 }
