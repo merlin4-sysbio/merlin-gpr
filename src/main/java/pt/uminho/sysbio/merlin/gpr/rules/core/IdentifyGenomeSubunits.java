@@ -30,11 +30,11 @@ import pt.uminho.sysbio.common.database.connector.databaseAPI.ModelAPI;
 import pt.uminho.sysbio.common.database.connector.datatypes.Connection;
 import pt.uminho.sysbio.common.database.connector.datatypes.DatabaseAccess;
 import pt.uminho.sysbio.common.local.alignments.core.RunSimilaritySearch;
-import pt.uminho.sysbio.merIin.utilities.capsules.AlignmentCapsule;
 import pt.uminho.sysbio.merlin.utilities.DatabaseProgressStatus;
 import pt.uminho.sysbio.merlin.utilities.Enumerators.AlignmentScoreType;
 import pt.uminho.sysbio.merlin.utilities.Enumerators.Method;
 import pt.uminho.sysbio.merlin.utilities.TimeLeftProgress;
+import pt.uminho.sysbio.merlin.utilities.containers.capsules.AlignmentCapsule;
 import pt.uminho.sysbio.merlin.utilities.containers.gpr.ReactionProteinGeneAssociation;
 import pt.uminho.sysbio.merlin.utilities.containers.gpr.ReactionsGPR_CI;
 
