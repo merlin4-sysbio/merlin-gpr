@@ -109,19 +109,13 @@ public class AuxUtilities {
 		List< String> l3_1 = new ArrayList< String> (); l3_1.add("M"); l3_1.add("N");
 		l3.add(l3_1);
 		
-		System.out.println( l1);
-		System.out.println( l2);
-		System.out.println( l3);
 		l3.get( l3.size() - 1);
 		List< List< List< String>>> l1Xl2 = new ArrayList< List <List< String>>> ();
 		l1Xl2.add(l1); l1Xl2.add(l2);
-		System.out.println( cartStringConcatProd2(l1Xl2, "+"));
 		List< List< List< String>>> l3Xl2 = new ArrayList< List <List< String>>> ();
 		l3Xl2.add(l3); l3Xl2.add(l2);
-		System.out.println( cartStringConcatProd2(l3Xl2, "+"));
 		List< List< List< String>>> l3Xl1 = new ArrayList< List <List< String>>> ();
 		l3Xl1.add(l3); l3Xl1.add(l1);
-		System.out.println( cartStringConcatProd2(l3Xl1, "#"));
 		//l1.add("B");
 		//List<String> l2 = new ArrayList<String> ();
 		//l2.add("X");
