@@ -61,7 +61,7 @@ public class GprTests {
 				System.out.println("Genome size:\t"+newGenome.keySet().size());
 
 				IdentifyGenomeSubunits i = new IdentifyGenomeSubunits(ec_numbers, newGenome, reference_organism_id, msqlmt, similarity_threshold, 
-						referenceTaxonomyThreshold, method, compareToFullGenome, cancel);
+						referenceTaxonomyThreshold, method, compareToFullGenome);
 				i.runIdentification(true);
 
 			}

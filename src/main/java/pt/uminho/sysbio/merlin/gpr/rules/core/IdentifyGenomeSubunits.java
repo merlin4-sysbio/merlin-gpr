@@ -77,7 +77,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 	 */
 	public IdentifyGenomeSubunits(Map<String, List<String>> ec_numbers, Map<String, AbstractSequence<?>> genome, long reference_organism_id, 
 			DatabaseAccess dba, double similarity_threshold, double referenceTaxonomyThreshold, Method method, 
-			boolean compareToFullGenome, AtomicBoolean cancel) {
+			boolean compareToFullGenome) {
 
 		this.ecNumbers = ec_numbers;
 		this.genome = genome;
@@ -85,7 +85,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 		this.dba = dba;
 		this.similarity_threshold = similarity_threshold;
 		this.method = method;
-		this.cancel = cancel;
+//		this.cancel = cancel;
 		this.referenceTaxonomyThreshold = referenceTaxonomyThreshold;
 		this.compareToFullGenome = compareToFullGenome;
 		this.findGapsResult = new ConcurrentLinkedQueue<AlignmentCapsule>();
