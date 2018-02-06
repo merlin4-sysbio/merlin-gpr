@@ -54,10 +54,10 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 	private DatabaseAccess dba;
 	private double similarity_threshold;
 	private Method method;
-	private AtomicBoolean cancel;
+//	private AtomicBoolean cancel;
 	private double referenceTaxonomyThreshold;
 	private boolean compareToFullGenome;
-	private TimeLeftProgress progress;
+//	private TimeLeftProgress progress;
 	private ConcurrentLinkedQueue<AlignmentCapsule> findGapsResult;
 
 
@@ -127,19 +127,19 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 			
 			bypass = ModelAPI.getECNumbersWithModules(conn);	
 			
-			long startTime = GregorianCalendar.getInstance().getTimeInMillis();
+//			long startTime = GregorianCalendar.getInstance().getTimeInMillis();
 
 			List<String> iterator = new ArrayList<>(this.ecNumbers.keySet());
 
 			Map<String, Integer> geneIds = ModelAPI.getGeneIds(statement);
 
 			Map<String, List<String>> sequenceIdsSet = ModelAPI.getSequenceIds(statement);
-
+			
 			for(int i = 0; i<iterator.size(); i++) {
 
 				String ec_number = iterator.get(i);
-
-				if(!hasLetters(ec_number) && !bypass.contains(ec_number)  && !this.cancel.get()) {
+				
+				if(!hasLetters(ec_number) && !bypass.contains(ec_number) && ec_number != null) {
 
 					try {
 
@@ -180,8 +180,6 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 							for(String ko : genes_ko_modules.keySet()) { 
 
-								if(!this.cancel.get()){
-
 									List<String> sequenceID = sequenceIdsSet.get(ko);						////////////////
 
 									if(sequenceID == null || sequenceID.isEmpty()) {
@@ -194,7 +192,6 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 										for(String gene : this.closestOrtholog.get(ko))
 											orthologs.put(gene, this.sequences.get(gene));
 									}
-								}
 							}
 						}
 
@@ -203,10 +200,10 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 						ConcurrentLinkedQueue<AlignmentCapsule> alignmentContainerSet = new ConcurrentLinkedQueue<>();					/////// no outro o concurrent linked queue está aqui
 
-						if(orthologs.size()>0 && !this.cancel.get()) {
+						if(orthologs.size()>0) {
 
 							RunSimilaritySearch search = new RunSimilaritySearch(this.genome, this.similarity_threshold, 
-									this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(0), AlignmentScoreType.ALIGNMENT);
+									this.method, orthologs, new AtomicBoolean(false), new AtomicInteger(0), new AtomicInteger(0), AlignmentScoreType.ALIGNMENT);
 
 							//search.addObserver(this);
 							search.setEc_number(ec_number);
@@ -261,11 +258,11 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 				if(ret)
 					IdentifyGenomeSubunits.setSubunitProcessed(conn, ec_number);
 
-				if(cancel.get())
-					i = iterator.size();
-
-				if(this.progress!=null)
-					progress.setTime(GregorianCalendar.getInstance().getTimeInMillis() - startTime, i, iterator.size());
+//				if(cancel.get())
+//					i = iterator.size();
+//
+//				if(this.progress!=null)
+//					progress.setTime(GregorianCalendar.getInstance().getTimeInMillis() - startTime, i, iterator.size());
 			}
 			conn.closeConnection();
 		} 
@@ -597,13 +594,13 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 		ModelAPI.updateECNumberStatus(conn, ec_number,DatabaseProgressStatus.PROCESSED.toString());
 	}
 
-	/**
-	 * @param progress
-	 */
-	public void setProgress(TimeLeftProgress progress) {
-
-		this.progress = progress;
-	}
+//	/**
+//	 * @param progress
+//	 */
+//	public void setProgress(TimeLeftProgress progress) {
+//
+//		this.progress = progress;
+//	}
 
 
 	@Override
