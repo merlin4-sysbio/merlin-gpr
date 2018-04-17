@@ -71,7 +71,12 @@ public class SelectClosestOrtholog //implements Runnable
 	 */
 	private void processTaxIds(List<String> tax_ids_list) throws Exception {
 		
+		System.out.println("tax_ids_list------>"+tax_ids_list);
+
 		List<List<String>> lists = this.splitLists(tax_ids_list, 100);
+		
+		System.out.println("lists------>"+lists);
+
 
 		for(List<String> tax_ids : lists) {
 

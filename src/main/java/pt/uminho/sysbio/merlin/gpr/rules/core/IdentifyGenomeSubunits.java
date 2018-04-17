@@ -135,7 +135,9 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 			Map<String, List<String>> sequenceIdsSet = ModelAPI.getSequenceIds(statement);
 			
-			for(int i = 0; i<iterator.size(); i++) {
+			System.out.println("EC_NUMBERS SIZE ----->"+iterator.size());
+			
+			for(int i = 0; i<75; i++) {//iterator.size(); i++) {
 
 				String ec_number = iterator.get(i);
 				
@@ -153,9 +155,9 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 							for(String ko : kos) {
 
 								List<String> sequenceID = sequenceIdsSet.get(ko);
-
+								
 								if(sequenceID == null || sequenceID.isEmpty()) {
-
+									
 									GetClosestOrhologSequence seq = new GetClosestOrhologSequence(ko, referenceTaxonomy, this.sequences, kegg_taxonomy_ids,
 											ncbi_taxonomy_ids, kegg_taxonomy_scores, this.closestOrtholog, orthologsSequences );
 									seq.run();
@@ -175,7 +177,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 							logger.info("Retrieved!");
 
 							genes_ko_modules = ModelAPI.loadModule(conn, result);
-
+							
 							logger.info("Genes, KO, modules \t{}",genes_ko_modules);
 
 							for(String ko : genes_ko_modules.keySet()) { 
@@ -183,6 +185,10 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 									List<String> sequenceID = sequenceIdsSet.get(ko);						////////////////
 
 									if(sequenceID == null || sequenceID.isEmpty()) {
+										
+										System.out.println("referenceTaxonomy------>"+referenceTaxonomy);
+										System.out.println("kegg_taxonomy_ids------>"+kegg_taxonomy_ids);
+										System.out.println("ncbi_taxonomy_ids------>"+ncbi_taxonomy_ids);
 
 										GetClosestOrhologSequence seq = new GetClosestOrhologSequence(ko, referenceTaxonomy, this.sequences, kegg_taxonomy_ids,
 												ncbi_taxonomy_ids, kegg_taxonomy_scores, this.closestOrtholog, orthologsSequences );
@@ -207,8 +213,15 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 							//search.addObserver(this);
 							search.setEc_number(ec_number);
-							if(!gapsIdentification)
-								search.setModules(genes_ko_modules);											
+							
+							
+							System.out.println("genes_KO_modules CHECK2---->"+ genes_ko_modules);
+							
+							
+							if(!gapsIdentification){
+								System.out.println("SET GENES_KO_MODULES");
+								search.setModules(genes_ko_modules);	
+							}
 							search.setClosestOrthologs(MapUtils.revertMapFromSet(this.closestOrtholog));
 							search.setReferenceTaxonomyScore(referenceTaxonomy.size());
 							search.setKegg_taxonomy_scores(kegg_taxonomy_scores);
@@ -216,10 +229,15 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 							search.setReferenceTaxonomyThreshold(this.referenceTaxonomyThreshold);
 							search.setCompareToFullGenome(this.compareToFullGenome);
 
-							if(!gapsIdentification)
+							if(!gapsIdentification){
 								alignmentContainerSet = search.run_OrthologsSearch(sequenceIdsSet, alignmentContainerSet);			/////// aqui e usado outro método!!! condicao
+							}
 							else
 								alignmentContainerSet = search.run_OrthologGapsSearch(sequenceIdsSet, alignmentContainerSet);
+							
+							
+							
+							System.out.println("ALIGNMENT CONTAINER filled------>"+alignmentContainerSet);
 
 							for (AlignmentCapsule capsule : alignmentContainerSet) {
 

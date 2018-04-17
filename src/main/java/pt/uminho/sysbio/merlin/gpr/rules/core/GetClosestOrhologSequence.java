@@ -70,10 +70,12 @@ public class GetClosestOrhologSequence {
 	public Set<String> getOrtholog() throws Exception {
 
 		if(!this.closestOrtholog.containsKey(ko)) {
+			
+			System.out.println("check1");
 
 			Set<String> genes_ids = this.getGenesForOrtholog();
 			this.closestOrtholog.put(ko,genes_ids);
-
+			
 			for(String gene_id : genes_ids) {
 
 				Map<String, List<String>> geneSequences = this.orthologsSequences.get(gene_id);
@@ -85,7 +87,7 @@ public class GetClosestOrhologSequence {
 					String aaseq = geneSequences.get("AASEQ").get(i);
 					sequence = sequence.concat(aaseq);
 				}
-
+				
 				this.sequences.put(gene_id, new ProteinSequence(sequence.toUpperCase()));
 			}
 		}
@@ -102,7 +104,7 @@ public class GetClosestOrhologSequence {
 	private Set<String> getGenesForOrtholog() throws Exception {
 
 		String[] findGenes = KeggAPI.findGenesFromKO(ko.trim());
-
+		
 		ConcurrentLinkedQueue<String> genes = new ConcurrentLinkedQueue<>();
 
 		for(String gene : findGenes) {
@@ -110,7 +112,13 @@ public class GetClosestOrhologSequence {
 			String[] orgGenes = gene.split(":");
 			genes.add(orgGenes[0]);
 		}
-
+		
+		System.out.println("check2");
+		
+		System.out.println("this.referenceTaxonomy------>"+this.referenceTaxonomy);
+		System.out.println("this.ncbi_taxonomy_ids------>"+this.ncbi_taxonomy_ids);
+		
+		
 		SelectClosestOrtholog sco = new SelectClosestOrtholog(this.referenceTaxonomy, this.ncbi_taxonomy_ids, this.kegg_taxonomy_ids, this.kegg_taxonomy_scores, genes);
 		sco.run();
 
@@ -127,9 +135,9 @@ public class GetClosestOrhologSequence {
 			if(geneOrg!= null && this.ncbi_taxonomy_ids.containsKey(geneOrg)) {
 
 				int score = this.ncbi_taxonomy_ids.get(geneOrg);
-
+				
 				if(this.getMaxScore(score, maxScore)) {
-
+					
 					Map<String, List<String>> geneSequence = KeggAPI.getGenesByID(gene);
 
 					if(geneSequence!=null) {
@@ -142,7 +150,7 @@ public class GetClosestOrhologSequence {
 					}
 				}
 				else if(maxOrg.equalsIgnoreCase(orgGenes[0])) {
-
+					
 					Map<String, List<String>> geneSequence = KeggAPI.getGenesByID(gene);
 					maxScore = score;
 					gene_id.add(gene);
