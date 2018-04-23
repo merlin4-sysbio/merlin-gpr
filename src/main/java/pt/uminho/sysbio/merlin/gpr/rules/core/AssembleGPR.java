@@ -52,7 +52,6 @@ public class AssembleGPR {
 		this.ec_number = ec_number;
 		this.isPartialECnumber = ec_number.contains(".-");
 		this.orthologsReactions = new HashMap<String, List<String>>();
-		//this.initialOrthologsReactions = new HashMap<String, List<String>>();
 		this.orthologsEnzymes = new ArrayList<String>();
 		this.reactionsEnzymes  = new ArrayList<String>();
 

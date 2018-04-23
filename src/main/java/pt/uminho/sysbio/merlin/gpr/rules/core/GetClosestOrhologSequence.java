@@ -23,12 +23,10 @@ public class GetClosestOrhologSequence {
 	private Map<String, String> kegg_taxonomy_ids;
 	private ConcurrentHashMap<String, Integer> ncbi_taxonomy_ids;
 	private List<String> referenceTaxonomy;
-	private String ko;
 	private ConcurrentHashMap<String, Integer> kegg_taxonomy_scores;
 	private ConcurrentHashMap<String, Map<String, List<String>>> orthologsSequences;
 
 	/**
-	 * @param ko
 	 * @param referenceTaxonomy
 	 * @param sequences
 	 * @param kegg_taxonomy_ids
@@ -38,12 +36,11 @@ public class GetClosestOrhologSequence {
 	 * @param orthologsSequences
 	 * @throws Exception
 	 */
-	public GetClosestOrhologSequence(String ko, List<String> referenceTaxonomy, ConcurrentHashMap<String, AbstractSequence<?>> sequences,
+	public GetClosestOrhologSequence(List<String> referenceTaxonomy, ConcurrentHashMap<String, AbstractSequence<?>> sequences,
 			Map<String, String> kegg_taxonomy_ids, ConcurrentHashMap<String, Integer> ncbi_taxonomy_ids,
 			ConcurrentHashMap<String, Integer> kegg_taxonomy_scores, ConcurrentHashMap<String, Set<String>> closestOrtholog, 
 			ConcurrentHashMap<String,Map<String,List<String>>> orthologsSequences) throws Exception {
 
-		this.setKo(ko);
 		this.setSequences(sequences);
 		this.setKegg_taxonomy_ids(kegg_taxonomy_ids);
 		this.setNcbi_taxonomy_ids(ncbi_taxonomy_ids);
@@ -53,27 +50,17 @@ public class GetClosestOrhologSequence {
 		this.setOrthologsSequences(orthologsSequences);
 	}
 
-	/**
-	 * @throws Exception
-	 */
-	public void run() throws Exception {
-
-		this.getOrtholog();
-	}
-
-	/**
+		/**
 	 * 
 	 * 
 	 * @return
 	 * @throws Exception
 	 */
-	public Set<String> getOrtholog() throws Exception {
+	public Set<String> getOrthologs(String ko) throws Exception {
 
 		if(!this.closestOrtholog.containsKey(ko)) {
 			
-			System.out.println("check1");
-
-			Set<String> genes_ids = this.getGenesForOrtholog();
+			Set<String> genes_ids = this.getGenesForOrtholog(ko);
 			this.closestOrtholog.put(ko,genes_ids);
 			
 			for(String gene_id : genes_ids) {
@@ -101,7 +88,7 @@ public class GetClosestOrhologSequence {
 	 * @return 
 	 * @throws Exception
 	 */
-	private Set<String> getGenesForOrtholog() throws Exception {
+	private Set<String> getGenesForOrtholog(String ko) throws Exception {
 
 		String[] findGenes = KeggAPI.findGenesFromKO(ko.trim());
 		
@@ -112,12 +99,6 @@ public class GetClosestOrhologSequence {
 			String[] orgGenes = gene.split(":");
 			genes.add(orgGenes[0]);
 		}
-		
-		System.out.println("check2");
-		
-		System.out.println("this.referenceTaxonomy------>"+this.referenceTaxonomy);
-		System.out.println("this.ncbi_taxonomy_ids------>"+this.ncbi_taxonomy_ids);
-		
 		
 		SelectClosestOrtholog sco = new SelectClosestOrtholog(this.referenceTaxonomy, this.ncbi_taxonomy_ids, this.kegg_taxonomy_ids, this.kegg_taxonomy_scores, genes);
 		sco.run();
@@ -171,22 +152,6 @@ public class GetClosestOrhologSequence {
 	private boolean getMaxScore(int score, int maxScore) {
 
 		return score > maxScore;
-	}
-
-
-	/**
-	 * @return the ko
-	 */
-	public String getKo() {
-		return ko;
-	}
-
-
-	/**
-	 * @param ko the ko to set
-	 */
-	public void setKo(String ko) {
-		this.ko = ko;
 	}
 
 
