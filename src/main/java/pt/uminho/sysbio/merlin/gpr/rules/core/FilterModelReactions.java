@@ -209,9 +209,9 @@ public class FilterModelReactions {
 		
 		s+="\n\n";
 		for(String r : this.annotations.keySet())
-			s+=r+"\t"+this.annotations.get(r)+"\n";
+			s+="reaction:\t"+r+"\t"+this.annotations.get(r)+"\n";
 
-		logger.info("{}", s);
+		logger.info("Integration report: {}\nEnd Report.", s);
 
 	}
 
@@ -245,10 +245,10 @@ public class FilterModelReactions {
 					}
 					else {
 
-						old_note = old_note.replaceAll(" \\| Removed by GPR tool","");
-						old_note = old_note.replaceAll("Removed by GPR tool","");
+						old_note = old_note.replaceAll(" \\| Removed by GPR rule","");
+						old_note = old_note.replaceAll("Removed by GPR rule","");
 
-						if(old_note.contains("New Annotation. GPR set from tool")) {
+						if(old_note.contains("new Annotation. automatic GPR")) {
 
 							String[] data = old_note.split(" \\| ");
 
@@ -256,7 +256,7 @@ public class FilterModelReactions {
 								old_note+=" | "+data[2];
 						}
 
-						if(old_note.contains("GPR set from tool")) {
+						if(old_note.contains("automatic GPR")) {
 
 							String[] data = old_note.split(" \\| ");
 
@@ -296,9 +296,6 @@ public class FilterModelReactions {
 
 		Map<String, String> notes_map = ModelAPI.createNotesMap(stmt, this.kept);
 
-		Map<String, String> notes_map_new = ModelAPI.createNotesMap(stmt, this.keptWithDifferentAnnotation);
-		//notes_map_new não está a ser usado. Não se deveria usa-lo no updateReactionTableWithDifferentAnnotation???
-		
 		PreparedStatement statement = connection.prepareStatement("UPDATE reaction SET boolean_rule=?, notes=? WHERE reaction.name=?");
 
 		ModelAPI.updateReactionTable(statement, this.kept, this.annotations, notes_map);

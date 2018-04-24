@@ -8,7 +8,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
@@ -20,7 +19,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.biojava.nbio.core.sequence.template.AbstractSequence;
-import org.h2.engine.SysProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,11 +54,12 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 	private DatabaseAccess dba;
 	private double similarity_threshold;
 	private Method method;
-	//	private AtomicBoolean cancel;
+	private AtomicBoolean cancel;
 	private double referenceTaxonomyThreshold;
 	private boolean compareToFullGenome;
-	//	private TimeLeftProgress progress;
+	private TimeLeftProgress progress;
 	private ConcurrentLinkedQueue<AlignmentCapsule> findGapsResult;
+	private long startTime;
 
 
 
@@ -87,14 +86,12 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 		this.dba = dba;
 		this.similarity_threshold = similarity_threshold;
 		this.method = method;
-		//		this.cancel = cancel;
 		this.referenceTaxonomyThreshold = referenceTaxonomyThreshold;
 		this.compareToFullGenome = compareToFullGenome;
 		this.findGapsResult = new ConcurrentLinkedQueue<AlignmentCapsule>();
+		startTime = GregorianCalendar.getInstance().getTimeInMillis();
 
 	}
-
-
 
 
 	/**
@@ -126,8 +123,6 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 			bypass = ModelAPI.getECNumbersWithModules(conn);	
 
-			//			long startTime = GregorianCalendar.getInstance().getTimeInMillis();
-
 			List<String> iterator = new ArrayList<>(this.ecNumbers.keySet());
 
 			Map<String, Integer> geneIds = ModelAPI.getGeneIds(statement);
@@ -141,137 +136,138 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 				String ec_number = iterator.get(i);
 
-					if(!hasLetters(ec_number) && !bypass.contains(ec_number) && ec_number != null) {
+				if(!hasLetters(ec_number) && !bypass.contains(ec_number) && ec_number != null) {
 
-						try {
+					try {
 
-							ConcurrentHashMap<String, AbstractSequence<?>> orthologs = new ConcurrentHashMap<>();
+						ConcurrentHashMap<String, AbstractSequence<?>> orthologs = new ConcurrentHashMap<>();
 
-							Map<String, Set<Integer>> genes_ko_modules = new HashMap<>();
+						Map<String, Set<Integer>> genes_ko_modules = new HashMap<>();
+
+						if(gapsIdentification) {
+
+							List<String> kos =	AssembleGPR.getOrthologsByECnumber(ec_number);
+
+							for(String ko : kos) {
+
+								List<String> sequenceID = sequenceIdsSet.get(ko);
+
+								if(sequenceID == null || sequenceID.isEmpty()) {
+
+									seq.getOrthologs(ko);
+
+									for(String gene : this.closestOrtholog.get(ko))
+										orthologs.put(gene, this.sequences.get(gene));
+								}
+							}
+						}
+						else{
+
+							logger.info("Retrieving GPR for {} ...",ec_number);
+							AssembleGPR gpr = new AssembleGPR(ec_number);
+							Map<String,List<ReactionProteinGeneAssociation>> result = gpr.run();
+							logger.info("Retrieved!");
+
+							genes_ko_modules = ModelAPI.loadModule(conn, result);
+
+							logger.info("Genes, KO, modules \t{}",genes_ko_modules);
+
+							for(String ko : genes_ko_modules.keySet()) { 
+
+								List<String> sequenceID = sequenceIdsSet.get(ko);
+
+								if(sequenceID == null || sequenceID.isEmpty()) {
+
+									seq.getOrthologs(ko);
+
+									for(String gene : this.closestOrtholog.get(ko))
+										orthologs.put(gene, this.sequences.get(gene));
+								}
+							}
+						}
+
+						logger.info("Orthologs to be searched in genome:\t{}\t{}", orthologs.size(), orthologs.keySet());
+
+						ConcurrentLinkedQueue<AlignmentCapsule> alignmentContainerSet = new ConcurrentLinkedQueue<>();					/////// no outro o concurrent linked queue está aqui
+
+						if(orthologs.size()>0) {
+
+							RunSimilaritySearch search = new RunSimilaritySearch(this.genome, this.similarity_threshold, 
+									this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(0), AlignmentScoreType.ALIGNMENT);
+
+							search.addObserver(this);
+							search.setEc_number(ec_number);
+
+							if(!gapsIdentification)								
+								search.setModules(genes_ko_modules);	
+
+							search.setClosestOrthologs(MapUtils.revertMapFromSet(this.closestOrtholog));
+							search.setReferenceTaxonomyScore(referenceTaxonomy.size());
+							search.setKegg_taxonomy_scores(kegg_taxonomy_scores);
+							search.setAnnotatedGenes(this.ecNumbers.get(ec_number));
+							search.setReferenceTaxonomyThreshold(this.referenceTaxonomyThreshold);
+							search.setCompareToFullGenome(this.compareToFullGenome);
+
+							if(gapsIdentification)
+								alignmentContainerSet = search.run_OrthologGapsSearch(sequenceIdsSet, alignmentContainerSet);
+							else
+								alignmentContainerSet = search.run_OrthologsSearch(sequenceIdsSet, alignmentContainerSet);			/////// aqui e usado outro método!!! condicao
+
+
+							for (AlignmentCapsule capsule : alignmentContainerSet) {
+
+								if(geneIds.get(capsule.getTarget()) != null) 
+									HomologyAPI.loadOrthologsInfo(capsule, geneIds, statement);
+							}
 
 							if(gapsIdentification) {
 
-								List<String> kos =	AssembleGPR.getOrthologsByECnumber(ec_number);
-
-								for(String ko : kos) {
-
-									List<String> sequenceID = sequenceIdsSet.get(ko);
-
-									if(sequenceID == null || sequenceID.isEmpty()) {
-
-										seq.getOrthologs(ko);
-
-										for(String gene : this.closestOrtholog.get(ko))
-											orthologs.put(gene, this.sequences.get(gene));
-									}
-								}
+								this.findGapsResult.addAll(alignmentContainerSet);
 							}
-							else{
-
-								logger.info("Retrieving GPR for {} ...",ec_number);
-								AssembleGPR gpr = new AssembleGPR(ec_number);
-								Map<String,List<ReactionProteinGeneAssociation>> result = gpr.run();
-								logger.info("Retrieved!");
-
-								genes_ko_modules = ModelAPI.loadModule(conn, result);
-
-								logger.info("Genes, KO, modules \t{}",genes_ko_modules);
-
-								for(String ko : genes_ko_modules.keySet()) { 
-
-									List<String> sequenceID = sequenceIdsSet.get(ko);
-
-									if(sequenceID == null || sequenceID.isEmpty()) {
-
-										seq.getOrthologs(ko);
-
-										for(String gene : this.closestOrtholog.get(ko))
-											orthologs.put(gene, this.sequences.get(gene));
-									}
-								}
-							}
-
-							logger.info("Orthologs to be searched in genome:\t{}\t{}", orthologs.size(), orthologs.keySet());
-
-							ConcurrentLinkedQueue<AlignmentCapsule> alignmentContainerSet = new ConcurrentLinkedQueue<>();					/////// no outro o concurrent linked queue está aqui
-
-							if(orthologs.size()>0) {
-
-								RunSimilaritySearch search = new RunSimilaritySearch(this.genome, this.similarity_threshold, 
-										this.method, orthologs, new AtomicBoolean(false), new AtomicInteger(0), new AtomicInteger(0), AlignmentScoreType.ALIGNMENT);
-
-								//search.addObserver(this);
-								search.setEc_number(ec_number);
-
-								if(!gapsIdentification)								
-									search.setModules(genes_ko_modules);	
-
-								search.setClosestOrthologs(MapUtils.revertMapFromSet(this.closestOrtholog));
-								search.setReferenceTaxonomyScore(referenceTaxonomy.size());
-								search.setKegg_taxonomy_scores(kegg_taxonomy_scores);
-								search.setAnnotatedGenes(this.ecNumbers.get(ec_number));
-								search.setReferenceTaxonomyThreshold(this.referenceTaxonomyThreshold);
-								search.setCompareToFullGenome(this.compareToFullGenome);
-
-								if(gapsIdentification)
-									alignmentContainerSet = search.run_OrthologGapsSearch(sequenceIdsSet, alignmentContainerSet);
-								else
-									alignmentContainerSet = search.run_OrthologsSearch(sequenceIdsSet, alignmentContainerSet);			/////// aqui e usado outro método!!! condicao
-
-
-								for (AlignmentCapsule capsule : alignmentContainerSet) {
-
-									if(geneIds.get(capsule.getTarget()) != null) 
-										HomologyAPI.loadOrthologsInfo(capsule, geneIds, statement);
-								}
-
-								if(gapsIdentification) {
-
-									this.findGapsResult.addAll(alignmentContainerSet);
-								}
-								else {
-
-									Map<Integer, Set<String>> modules = MapUtils.revertMapFromSet(genes_ko_modules);					///////// esta parte nao e usada no outro
-
-									for(int module_id : modules.keySet()) {
-
-										if(search.getSequencesWithoutSimilarities().containsAll(modules.get(module_id)))
-											ModelAPI.updateECNumberModule(conn, ec_number, module_id, "no_similarities");
-										else
-											ModelAPI.updateECNumberModule(conn, ec_number, module_id, "has orthologs");
-									}
-								}
-
-							}
-							else { //if(orthologs.size() == 0) {
+							else {
 
 								Map<Integer, Set<String>> modules = MapUtils.revertMapFromSet(genes_ko_modules);					///////// esta parte nao e usada no outro
 
 								for(int module_id : modules.keySet()) {
 
-									ModelAPI.updateECNumberModule(conn, ec_number, module_id, "has orthologs");								////// aqui -1??
+									if(search.getSequencesWithoutSimilarities().containsAll(modules.get(module_id)))
+										ModelAPI.updateECNumberModule(conn, ec_number, module_id);
+									else
+										ModelAPI.updateECNumberModule(conn, ec_number, module_id);
 								}
 							}
 
 						}
-						catch (Exception e) {
+						else { //if(orthologs.size() == 0) {
 
-							ModelAPI.updateECNumberModuleStatus(conn, ec_number, DatabaseProgressStatus.PROCESSING.toString());
-							ret = false;
-							logger.error("error {}",e.getStackTrace().toString());
-							e.printStackTrace();
+							Map<Integer, Set<String>> modules = MapUtils.revertMapFromSet(genes_ko_modules);					///////// esta parte nao e usada no outroenzy
+
+							if(modules.keySet().size()>0) {
+								for(int module_id : modules.keySet()) {
+
+									ModelAPI.updateECNumberModule(conn, ec_number, module_id);								////// aqui -1??
+								}
+							}
 						}
 					}
+					catch (Exception e) {
+
+						ModelAPI.updateECNumberModuleStatus(conn, ec_number, DatabaseProgressStatus.PROCESSING.toString());
+						ret = false;
+						logger.error("error {}",e.getStackTrace().toString());
+						e.printStackTrace();
+					}
+				}
 
 
-					if(ret)
-						IdentifyGenomeSubunits.setECNumberModuleProcessed(conn, ec_number);
+				if(ret)
+					IdentifyGenomeSubunits.setECNumberModuleProcessed(conn, ec_number);
 
-					//				if(cancel.get())
-					//					i = iterator.size();
-					//
-					//				if(this.progress!=null)
-					//					progress.setTime(GregorianCalendar.getInstance().getTimeInMillis() - startTime, i, iterator.size());
+				if(cancel.get())
+					i = iterator.size();
+
+				if(this.progress!=null)
+					progress.setTime(GregorianCalendar.getInstance().getTimeInMillis() - this.startTime, i, iterator.size());
 			}
 			conn.closeConnection();
 		} 
@@ -347,13 +343,21 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 		ModelAPI.updateECNumberModuleStatus(conn, ec_number,DatabaseProgressStatus.PROCESSED.toString());
 	}
 
-	//	/**
-	//	 * @param progress
-	//	 */
-	//	public void setProgress(TimeLeftProgress progress) {
-	//
-	//		this.progress = progress;
-	//	}
+	/**
+	 * @param progress
+	 */
+	public void setProgress(TimeLeftProgress progress) {
+
+		this.progress = progress;
+	}
+
+	/**
+	 * @param cancel
+	 */
+	public void setCancel(AtomicBoolean cancel) {
+
+		this.cancel = cancel;
+	}
 
 
 	@Override

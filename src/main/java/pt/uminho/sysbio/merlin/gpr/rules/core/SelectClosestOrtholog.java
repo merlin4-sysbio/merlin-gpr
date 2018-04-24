@@ -7,6 +7,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import pt.uminho.ceb.biosystems.mew.utilities.datastructures.map.MapUtils;
 import pt.uminho.sysbio.common.bioapis.externalAPI.ncbi.NcbiAPI;
 
@@ -23,6 +26,7 @@ public class SelectClosestOrtholog //implements Runnable
 	private ConcurrentLinkedQueue<String> genes;
 	private ConcurrentHashMap<String, Integer> kegg_taxonomy_scores;
 	private Map<String, Set<String>> kegg_taxonomy_reverse;
+	final static Logger logger = LoggerFactory.getLogger(SelectClosestOrtholog.class);
 
 	/**
 	 * @param referenceTaxonomy
@@ -51,17 +55,17 @@ public class SelectClosestOrtholog //implements Runnable
 
 		List<String> genesOrg  = new ArrayList<>();
 
-//		for(String gene : this.genes)
-//			genesOrg.add(this.kegg_taxonomy_ids.get(gene.split(":")[0]));
+		//		for(String gene : this.genes)
+		//			genesOrg.add(this.kegg_taxonomy_ids.get(gene.split(":")[0]));
 
 		for(String gene : this.genes){
-			
+
 			String taxID = this.kegg_taxonomy_ids.get(gene.split(":")[0]);
-			
-			if (taxID != null && !taxID.equals(""))
+
+			if (taxID != null && !taxID.isEmpty())
 				genesOrg.add(taxID);
 		}
-		
+
 		this.processTaxIds(genesOrg);
 	}
 
@@ -70,35 +74,42 @@ public class SelectClosestOrtholog //implements Runnable
 	 * @throws Exception
 	 */
 	private void processTaxIds(List<String> tax_ids_list) throws Exception {
-		
+
 		List<List<String>> lists = this.splitLists(tax_ids_list, 100);
-		
+
 		for(List<String> tax_ids : lists) {
 
-			Map<String,String[]> ncbi_ids = NcbiAPI.getTaxonList(tax_ids.toString());
+			if(tax_ids.isEmpty()) {
 
-			for(String tax_id : tax_ids) {
+				logger.warn("empty list, skipping...");
+			}
+			else {
 
-				int score = -1;
+				Map<String,String[]> ncbi_ids = NcbiAPI.getTaxonList(tax_ids.toString());
 
-				if(ncbi_ids.containsKey(tax_id)) {
+				for(String tax_id : tax_ids) {
 
-					String[] taxonomy = ncbi_ids.get(tax_id)[1].split(";");
+					int score = -1;
 
-					List<String> match = new ArrayList<>();
-					
-					for(String t : taxonomy)
-						match.add(t.trim());
+					if(ncbi_ids.containsKey(tax_id)) {
 
-					match.add(ncbi_ids.get(tax_id)[0].trim());
-					match.retainAll(this.referenceTaxonomy);
+						String[] taxonomy = ncbi_ids.get(tax_id)[1].split(";");
 
-					score = match.size();
+						List<String> match = new ArrayList<>();
 
-					this.ncbi_taxonomy_ids.put(tax_id, score);
+						for(String t : taxonomy)
+							match.add(t.trim());
 
-					for(String org : this.kegg_taxonomy_reverse.get(tax_id))					
-						this.kegg_taxonomy_scores.put(org, score);
+						match.add(ncbi_ids.get(tax_id)[0].trim());
+						match.retainAll(this.referenceTaxonomy);
+
+						score = match.size();
+
+						this.ncbi_taxonomy_ids.put(tax_id, score);
+
+						for(String org : this.kegg_taxonomy_reverse.get(tax_id))					
+							this.kegg_taxonomy_scores.put(org, score);
+					}
 				}
 			}
 		}
