@@ -36,7 +36,7 @@ import pt.uminho.ceb.biosystems.merlin.utilities.TimeLeftProgress;
 import pt.uminho.ceb.biosystems.merlin.utilities.containers.capsules.AlignmentCapsule;
 import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionProteinGeneAssociation;
 import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionsGPR_CI;
-import pt.uminho.ceb.biosystems.mew.utilities.datastructures.map.MapUtils;
+import pt.uminho.ceb.biosystems.merlin.utilities.datastructures.map.MapUtils;
 
 /**
  * @author ODias
