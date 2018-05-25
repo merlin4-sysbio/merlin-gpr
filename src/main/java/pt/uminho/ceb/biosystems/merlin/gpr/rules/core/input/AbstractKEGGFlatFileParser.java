@@ -1,4 +1,4 @@
-package pt.uminho.sysbio.merlin.gpr.rules.core.input;
+package pt.uminho.ceb.biosystems.merlin.gpr.rules.core.input;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;

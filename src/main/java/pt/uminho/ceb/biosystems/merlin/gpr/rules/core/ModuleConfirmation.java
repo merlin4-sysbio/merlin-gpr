@@ -1,7 +1,7 @@
 /**
  * 
  */
-package pt.uminho.sysbio.merlin.gpr.rules.core;
+package pt.uminho.ceb.biosystems.merlin.gpr.rules.core;
 
 import java.util.HashSet;
 import java.util.Set;

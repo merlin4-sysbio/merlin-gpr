@@ -10,13 +10,13 @@ import org.biojava.nbio.core.sequence.io.FastaReaderHelper;
 import org.biojava.nbio.core.sequence.template.AbstractSequence;
 import org.junit.Test;
 
-import pt.uminho.sysbio.common.database.connector.databaseAPI.ModelAPI;
-import pt.uminho.sysbio.common.database.connector.datatypes.Connection;
-import pt.uminho.sysbio.common.database.connector.datatypes.DatabaseAccess;
-import pt.uminho.sysbio.common.database.connector.datatypes.MySQLDatabaseAccess;
-import pt.uminho.sysbio.merlin.gpr.rules.core.FilterModelReactions;
-import pt.uminho.sysbio.merlin.gpr.rules.core.IdentifyGenomeSubunits;
-import pt.uminho.sysbio.merlin.utilities.Enumerators.Method;
+import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.ModelAPI;
+import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.Connection;
+import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.DatabaseAccess;
+import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.MySQLDatabaseAccess;
+import pt.uminho.ceb.biosystems.merlin.gpr.rules.core.FilterModelReactions;
+import pt.uminho.ceb.biosystems.merlin.gpr.rules.core.IdentifyGenomeSubunits;
+import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.Method;
 
 public class GprTests {
 

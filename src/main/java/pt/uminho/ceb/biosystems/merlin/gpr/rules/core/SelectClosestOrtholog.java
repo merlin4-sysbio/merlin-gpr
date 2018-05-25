@@ -1,4 +1,4 @@
-package pt.uminho.sysbio.merlin.gpr.rules.core;
+package pt.uminho.ceb.biosystems.merlin.gpr.rules.core;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +10,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pt.uminho.ceb.biosystems.merlin.bioapis.externalAPI.ncbi.NcbiAPI;
 import pt.uminho.ceb.biosystems.mew.utilities.datastructures.map.MapUtils;
-import pt.uminho.sysbio.common.bioapis.externalAPI.ncbi.NcbiAPI;
 
 /**
  * @author ODias
