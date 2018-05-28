@@ -1,4 +1,4 @@
-package pt.uminho.sysbio.merlin.gpr.rules.core;
+package pt.uminho.ceb.biosystems.merlin.gpr.rules.core;
 
 import java.util.HashSet;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.template.AbstractSequence;
 
-import pt.uminho.sysbio.common.bioapis.externalAPI.kegg.KeggAPI;
+import pt.uminho.ceb.biosystems.merlin.bioapis.externalAPI.kegg.KeggAPI;
 
 /**
  * @author Oscar Dias

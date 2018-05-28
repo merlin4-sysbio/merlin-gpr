@@ -1,7 +1,7 @@
 /**
  * 
  */
-package pt.uminho.sysbio.merlin.gpr.rules.core;
+package pt.uminho.ceb.biosystems.merlin.gpr.rules.core;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -22,21 +22,21 @@ import org.biojava.nbio.core.sequence.template.AbstractSequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pt.uminho.ceb.biosystems.mew.utilities.datastructures.map.MapUtils;
-import pt.uminho.sysbio.common.bioapis.externalAPI.kegg.KeggAPI;
-import pt.uminho.sysbio.common.bioapis.externalAPI.ncbi.NcbiAPI;
-import pt.uminho.sysbio.common.database.connector.databaseAPI.HomologyAPI;
-import pt.uminho.sysbio.common.database.connector.databaseAPI.ModelAPI;
-import pt.uminho.sysbio.common.database.connector.datatypes.Connection;
-import pt.uminho.sysbio.common.database.connector.datatypes.DatabaseAccess;
-import pt.uminho.sysbio.common.local.alignments.core.RunSimilaritySearch;
-import pt.uminho.sysbio.merlin.utilities.DatabaseProgressStatus;
-import pt.uminho.sysbio.merlin.utilities.Enumerators.AlignmentScoreType;
-import pt.uminho.sysbio.merlin.utilities.Enumerators.Method;
-import pt.uminho.sysbio.merlin.utilities.TimeLeftProgress;
-import pt.uminho.sysbio.merlin.utilities.containers.capsules.AlignmentCapsule;
-import pt.uminho.sysbio.merlin.utilities.containers.gpr.ReactionProteinGeneAssociation;
-import pt.uminho.sysbio.merlin.utilities.containers.gpr.ReactionsGPR_CI;
+import pt.uminho.ceb.biosystems.merlin.bioapis.externalAPI.kegg.KeggAPI;
+import pt.uminho.ceb.biosystems.merlin.bioapis.externalAPI.ncbi.NcbiAPI;
+import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.HomologyAPI;
+import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.ModelAPI;
+import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.Connection;
+import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.DatabaseAccess;
+import pt.uminho.ceb.biosystems.merlin.local.alignments.core.RunSimilaritySearch;
+import pt.uminho.ceb.biosystems.merlin.utilities.DatabaseProgressStatus;
+import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.AlignmentScoreType;
+import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.Method;
+import pt.uminho.ceb.biosystems.merlin.utilities.TimeLeftProgress;
+import pt.uminho.ceb.biosystems.merlin.utilities.containers.capsules.AlignmentCapsule;
+import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionProteinGeneAssociation;
+import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionsGPR_CI;
+import pt.uminho.ceb.biosystems.merlin.utilities.datastructures.map.MapUtils;
 
 /**
  * @author ODias

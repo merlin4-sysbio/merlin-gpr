@@ -1,4 +1,4 @@
-package pt.uminho.sysbio.merlin.gpr.rules.grammar;
+package pt.uminho.ceb.biosystems.merlin.gpr.rules.grammar;
 
 import java.util.ArrayList;
 import java.util.List;

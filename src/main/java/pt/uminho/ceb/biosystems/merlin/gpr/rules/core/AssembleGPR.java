@@ -1,4 +1,4 @@
-package pt.uminho.sysbio.merlin.gpr.rules.core;
+package pt.uminho.ceb.biosystems.merlin.gpr.rules.core;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -16,14 +16,14 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pt.uminho.sysbio.common.bioapis.externalAPI.kegg.KeggAPI;
-import pt.uminho.sysbio.merlin.gpr.rules.core.input.KeggModulesParser;
-import pt.uminho.sysbio.merlin.gpr.rules.grammar.KEGGOrthologyParser;
-import pt.uminho.sysbio.merlin.utilities.Enumerators.ModuleType;
-import pt.uminho.sysbio.merlin.utilities.containers.gpr.GeneAssociation;
-import pt.uminho.sysbio.merlin.utilities.containers.gpr.ModuleCI;
-import pt.uminho.sysbio.merlin.utilities.containers.gpr.ProteinGeneAssociation;
-import pt.uminho.sysbio.merlin.utilities.containers.gpr.ReactionProteinGeneAssociation;
+import pt.uminho.ceb.biosystems.merlin.bioapis.externalAPI.kegg.KeggAPI;
+import pt.uminho.ceb.biosystems.merlin.gpr.rules.core.input.KeggModulesParser;
+import pt.uminho.ceb.biosystems.merlin.gpr.rules.grammar.KEGGOrthologyParser;
+import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.ModuleType;
+import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.GeneAssociation;
+import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ModuleCI;
+import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ProteinGeneAssociation;
+import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionProteinGeneAssociation;
 
 
 /**
