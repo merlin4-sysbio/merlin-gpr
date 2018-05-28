@@ -106,7 +106,9 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 			Connection conn = new Connection(this.dba);
 			Statement statement = conn.createStatement();
 
-			this.sequences = new ConcurrentHashMap<>();
+			if(!this.ecNumbers.isEmpty()) {
+				
+				this.sequences = new ConcurrentHashMap<>();
 			this.closestOrtholog = new ConcurrentHashMap<>();
 
 			List<String> referenceTaxonomy = NcbiAPI.getReferenceTaxonomy(reference_organism_id);
@@ -114,19 +116,17 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 			ConcurrentHashMap<String, Integer> ncbi_taxonomy_ids = new ConcurrentHashMap<>();
 			ConcurrentHashMap<String, Integer> kegg_taxonomy_scores = new ConcurrentHashMap<>();
-			ConcurrentHashMap<String, Map<String, List<String>>> orthologsSequences = new ConcurrentHashMap<>();;
-
 			kegg_taxonomy_scores.put("noOrg", 0);
+			ConcurrentHashMap<String, Map<String, List<String>>> orthologsSequences = new ConcurrentHashMap<>();;
 			Map<String, String> kegg_taxonomy_ids = IdentifyGenomeSubunits.getKeggTaxonomyIDs();
 
-			Set<String> bypass = null;
-
-			bypass = ModelAPI.getECNumbersWithModules(conn);	
-
+			Set<String> bypass =  ModelAPI.getECNumbersWithModules(conn);	
 			List<String> iterator = new ArrayList<>(this.ecNumbers.keySet());
-
+			iterator.removeAll(bypass);
+			
+			logger.info("Iterator size: {}, entries {}", iterator.size(), iterator);
+			
 			Map<String, Integer> geneIds = ModelAPI.getGeneIds(statement);
-
 			Map<String, List<String>> sequenceIdsSet = ModelAPI.getSequenceIds(statement);
 
 			GetClosestOrhologSequence seq = new GetClosestOrhologSequence(referenceTaxonomy, this.sequences, kegg_taxonomy_ids,
@@ -259,7 +259,6 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 					}
 				}
 
-
 				if(ret)
 					IdentifyGenomeSubunits.setECNumberModuleProcessed(conn, ec_number);
 
@@ -269,6 +268,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 				if(this.progress!=null)
 					progress.setTime(GregorianCalendar.getInstance().getTimeInMillis() - this.startTime, i, iterator.size());
 			}
+		}
 			conn.closeConnection();
 		} 
 		catch (Exception e) {

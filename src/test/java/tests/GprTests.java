@@ -50,7 +50,7 @@ public class GprTests {
 				AtomicBoolean cancel = new AtomicBoolean(false);
 				Method method = Method.SmithWaterman;
 
-				Map<String, List<String>> ec_numbers = ModelAPI.getECNumbers(new Connection(msqlmt));
+				Map<String, List<String>> ec_numbers = ModelAPI.getGPRsECNumbers(new Connection(msqlmt));
 				System.out.println("Enzymes size:\t"+ec_numbers.keySet().size());
 
 				Map<String, AbstractSequence<?>> genome =  new HashMap<>();
