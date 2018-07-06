@@ -208,10 +208,13 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 							search.setReferenceTaxonomyThreshold(this.referenceTaxonomyThreshold);
 							search.setCompareToFullGenome(this.compareToFullGenome);
 
-							if(gapsIdentification)
-								alignmentContainerSet = search.run_OrthologGapsSearch(sequenceIdsSet, alignmentContainerSet);
-							else
+							if(gapsIdentification){
+								boolean recursive = false;
+								alignmentContainerSet = search.run_OrthologGapsSearch(sequenceIdsSet, alignmentContainerSet, recursive);
+							}
+							else{
 								alignmentContainerSet = search.run_OrthologsSearch(sequenceIdsSet, alignmentContainerSet);			/////// aqui e usado outro método!!! condicao
+							}
 
 
 							for (AlignmentCapsule capsule : alignmentContainerSet) {
