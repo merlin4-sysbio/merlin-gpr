@@ -37,6 +37,7 @@ import pt.uminho.ceb.biosystems.merlin.utilities.containers.capsules.AlignmentCa
 import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionProteinGeneAssociation;
 import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionsGPR_CI;
 import pt.uminho.ceb.biosystems.merlin.utilities.datastructures.map.MapUtils;
+import pt.uminho.ceb.biosystems.merlin.utilities.io.FileUtils;
 
 /**
  * @author ODias
@@ -60,6 +61,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 	private TimeLeftProgress progress;
 	private ConcurrentLinkedQueue<AlignmentCapsule> findGapsResult;
 	private long startTime;
+	private String wsTaxonomyTempFolderPath;
 
 
 
@@ -190,7 +192,14 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 						ConcurrentLinkedQueue<AlignmentCapsule> alignmentContainerSet = new ConcurrentLinkedQueue<>();					/////// no outro o concurrent linked queue está aqui
 
+						System.out.println("ORTHOLOGS---->"+orthologs);
+						
 						if(orthologs.size()>0) {
+							
+							System.out.println("CHECK1");
+							
+							System.out.println("GENOME---->"+this.genome.keySet());
+							System.out.println("GENOME SIZE----->"+this.genome.size());
 
 							RunSimilaritySearch search = new RunSimilaritySearch(this.genome, this.similarity_threshold, 
 									this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(0), AlignmentScoreType.ALIGNMENT);
@@ -207,6 +216,8 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 							search.setAnnotatedGenes(this.ecNumbers.get(ec_number));
 							search.setReferenceTaxonomyThreshold(this.referenceTaxonomyThreshold);
 							search.setCompareToFullGenome(this.compareToFullGenome);
+							
+							search.setSubjectFastaFilePath(wsTaxonomyTempFolderPath.concat("gprsAnnotationsFile.faa"));
 
 							if(gapsIdentification){
 								boolean recursive = false;
@@ -345,6 +356,22 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 		ModelAPI.updateECNumberModuleStatus(conn, ec_number,DatabaseProgressStatus.PROCESSED.toString());
 	}
+
+	/**
+	 * @return the wsTaxonomyTempFolderPath
+	 */
+	public String getWsTaxonomyTempFolderPath() {
+		return wsTaxonomyTempFolderPath;
+	}
+
+
+	/**
+	 * @param wsTaxonomyTempFolderPath the wsTaxonomyTempFolderPath to set
+	 */
+	public void setWsTaxonomyTempFolderPath(String wsTaxonomyTempFolderPath) {
+		this.wsTaxonomyTempFolderPath = wsTaxonomyTempFolderPath;
+	}
+
 
 	/**
 	 * @param progress
