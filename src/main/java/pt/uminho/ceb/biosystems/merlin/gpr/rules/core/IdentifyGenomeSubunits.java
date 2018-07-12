@@ -196,8 +196,6 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 							if(orthologs.size()>0) {
 
-								System.out.println("CHECK1");
-
 								System.out.println("GENOME---->"+this.genome.keySet());
 								System.out.println("GENOME SIZE----->"+this.genome.size());
 
@@ -220,10 +218,12 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 								search.setSubjectFastaFilePath(wsTaxonomyTempFolderPath.concat("gprsAnnotationsFile.faa"));
 
 								if(gapsIdentification){
-									boolean recursive = false;
-									alignmentContainerSet = search.run_OrthologGapsSearch(sequenceIdsSet, alignmentContainerSet, recursive);
+									System.out.println("CHECK1");
+//									boolean recursive = false;
+									alignmentContainerSet = search.run_OrthologGapsSearch(sequenceIdsSet, alignmentContainerSet);//, recursive);
 								}
 								else{
+									System.out.println("CHECK2");
 									alignmentContainerSet = search.run_OrthologsSearch(sequenceIdsSet, alignmentContainerSet);			/////// aqui e usado outro método!!! condicao
 								}
 
