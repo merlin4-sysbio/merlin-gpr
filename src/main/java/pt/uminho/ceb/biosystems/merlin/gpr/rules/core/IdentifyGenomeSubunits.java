@@ -218,13 +218,12 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 								search.setSubjectFastaFilePath(wsTaxonomyTempFolderPath.concat("gprsAnnotationsFile.faa"));
 
 								if(gapsIdentification){
-									System.out.println("CHECK1");
 //									boolean recursive = false;
 									alignmentContainerSet = search.run_OrthologGapsSearch(sequenceIdsSet, alignmentContainerSet);//, recursive);
 								}
 								else{
 									System.out.println("CHECK2");
-									alignmentContainerSet = search.run_OrthologsSearch(sequenceIdsSet, alignmentContainerSet);			/////// aqui e usado outro método!!! condicao
+									alignmentContainerSet = search.run_OrthologsSearch(sequenceIdsSet, alignmentContainerSet);
 								}
 
 
@@ -240,7 +239,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 								}
 								else {
 
-									Map<Integer, Set<String>> modules = MapUtils.revertMapFromSet(genes_ko_modules);					///////// esta parte nao e usada no outro
+									Map<Integer, Set<String>> modules = MapUtils.revertMapFromSet(genes_ko_modules);
 
 									for(int module_id : modules.keySet()) {
 
@@ -252,14 +251,14 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 								}
 
 							}
-							else { //if(orthologs.size() == 0) {
-
-								Map<Integer, Set<String>> modules = MapUtils.revertMapFromSet(genes_ko_modules);					///////// esta parte nao e usada no outroenzy
+							else { 
+								
+								Map<Integer, Set<String>> modules = MapUtils.revertMapFromSet(genes_ko_modules);
 
 								if(modules.keySet().size()>0) {
 									for(int module_id : modules.keySet()) {
 
-										ModelAPI.updateECNumberModule(conn, ec_number, module_id);								////// aqui -1??
+										ModelAPI.updateECNumberModule(conn, ec_number, module_id);
 									}
 								}
 							}
