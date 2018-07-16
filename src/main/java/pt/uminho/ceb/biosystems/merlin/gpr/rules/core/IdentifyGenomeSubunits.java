@@ -149,7 +149,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 							if(gapsIdentification) {
 
 								List<String> kos =	AssembleGPR.getOrthologsByECnumber(ec_number);
-
+								
 								for(String ko : kos) {
 
 									List<String> sequenceID = sequenceIdsSet.get(ko);
@@ -215,14 +215,15 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 								search.setReferenceTaxonomyThreshold(this.referenceTaxonomyThreshold);
 								search.setCompareToFullGenome(this.compareToFullGenome);
 
-								search.setSubjectFastaFilePath(wsTaxonomyTempFolderPath.concat("gprsAnnotationsFile.faa"));
-
 								if(gapsIdentification){
 //									boolean recursive = false;
+									search.setGapsIdentification(true);
+									search.setSubjectFastaFilePath(wsTaxonomyTempFolderPath.concat("GapsFillAnnotationsFile.faa"));
 									alignmentContainerSet = search.run_OrthologGapsSearch(sequenceIdsSet, alignmentContainerSet);//, recursive);
 								}
 								else{
 									System.out.println("CHECK2");
+									search.setSubjectFastaFilePath(wsTaxonomyTempFolderPath.concat("gprsAnnotationsFile.faa"));
 									alignmentContainerSet = search.run_OrthologsSearch(sequenceIdsSet, alignmentContainerSet);
 								}
 
