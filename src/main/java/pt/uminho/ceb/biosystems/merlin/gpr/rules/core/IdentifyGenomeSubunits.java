@@ -192,12 +192,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 							ConcurrentLinkedQueue<AlignmentCapsule> alignmentContainerSet = new ConcurrentLinkedQueue<>();					/////// no outro o concurrent linked queue está aqui
 
-							System.out.println("ORTHOLOGS---->"+orthologs);
-
 							if(orthologs.size()>0) {
-
-								System.out.println("GENOME---->"+this.genome.keySet());
-								System.out.println("GENOME SIZE----->"+this.genome.size());
 
 								RunSimilaritySearch search = new RunSimilaritySearch(this.genome, this.similarity_threshold, 
 										this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(0), AlignmentScoreType.ALIGNMENT);
@@ -222,7 +217,6 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 									alignmentContainerSet = search.run_OrthologGapsSearch(sequenceIdsSet, alignmentContainerSet);//, recursive);
 								}
 								else{
-									System.out.println("CHECK2");
 									search.setSubjectFastaFilePath(wsTaxonomyTempFolderPath.concat("gprsAnnotationsFile.faa"));
 									alignmentContainerSet = search.run_OrthologsSearch(sequenceIdsSet, alignmentContainerSet);
 								}
