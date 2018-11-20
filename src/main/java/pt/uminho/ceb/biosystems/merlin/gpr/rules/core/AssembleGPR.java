@@ -86,6 +86,7 @@ public class AssembleGPR {
 	public static List<String> getOrthologsByECnumber(String ec_number) throws Exception {
 
 		List<String> orthologs_temp = KeggAPI.getOrthologsByECnumber(ec_number);
+		
 		List<String> orthologsEnzymes = new ArrayList<>();
 		
 		for(String ko : orthologs_temp) {
