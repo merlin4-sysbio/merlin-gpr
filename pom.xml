@@ -3,13 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>pt.uminho.ceb.biosystems.merlin</groupId>
 	<artifactId>merlin-gpr</artifactId>
-	<version>0.0.3-SNAPSHOT</version>
+	<version>0.0.4-SNAPSHOT</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
-		<pt.uminho.ceb.biosystems.merlin.version>0.0.3-SNAPSHOT</pt.uminho.ceb.biosystems.merlin.version>
+		<pt.uminho.ceb.biosystems.merlin.version>0.0.4-SNAPSHOT</pt.uminho.ceb.biosystems.merlin.version>
 		<pt.uminho.ceb.biosystems.merlin.groupId>pt.uminho.ceb.biosystems.merlin</pt.uminho.ceb.biosystems.merlin.groupId>
 	</properties>
 
