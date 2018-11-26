@@ -62,6 +62,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 	private ConcurrentLinkedQueue<AlignmentCapsule> findGapsResult;
 	private long startTime;
 	private String wsTaxonomyTempFolderPath;
+	private String wsTaxonomyFolderPath;
 
 
 
@@ -125,7 +126,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 				Set<String> bypass =  ModelAPI.getECNumbersWithModules(conn);	
 				List<String> iterator = new ArrayList<>(this.ecNumbers.keySet());
 				iterator.removeAll(bypass);
-
+				
 				logger.info("Iterator size: {}, entries {}", iterator.size(), iterator);
 
 				Map<String, Integer> geneIds = ModelAPI.getGeneIds(statement);
@@ -137,7 +138,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 				for(int i = 0; i<iterator.size(); i++) {
 
 					String ec_number = iterator.get(i);
-
+					
 					if(!hasLetters(ec_number) && !bypass.contains(ec_number) && ec_number != null) {
 
 						try {
@@ -151,9 +152,9 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 								List<String> kos =	AssembleGPR.getOrthologsByECnumber(ec_number);
 								
 								for(String ko : kos) {
-
+									
 									List<String> sequenceID = sequenceIdsSet.get(ko);
-
+									
 									if(sequenceID == null || sequenceID.isEmpty()) {
 
 										seq.getOrthologs(ko);
@@ -199,6 +200,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 								search.addObserver(this);
 								search.setEc_number(ec_number);
+								search.setWorkspaceTaxonomyFolderPath(this.wsTaxonomyFolderPath);
 
 								if(!gapsIdentification)								
 									search.setModules(genes_ko_modules);	
@@ -213,11 +215,11 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 								if(gapsIdentification){
 //									boolean recursive = false;
 									search.setGapsIdentification(true);
-									search.setSubjectFastaFilePath(wsTaxonomyTempFolderPath.concat("GapsFillAnnotationsFile.faa"));
+									search.setSubjectFastaFilePath(this.wsTaxonomyTempFolderPath.concat("GapsFillAnnotationsFile.faa"));
 									alignmentContainerSet = search.run_OrthologGapsSearch(sequenceIdsSet, alignmentContainerSet);//, recursive);
 								}
 								else{
-									search.setSubjectFastaFilePath(wsTaxonomyTempFolderPath.concat("gprsAnnotationsFile.faa"));
+									search.setSubjectFastaFilePath(this.wsTaxonomyTempFolderPath.concat("gprsAnnotationsFile.faa"));
 									alignmentContainerSet = search.run_OrthologsSearch(sequenceIdsSet, alignmentContainerSet);
 								}
 
@@ -353,6 +355,22 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 		ModelAPI.updateECNumberModuleStatus(conn, ec_number,DatabaseProgressStatus.PROCESSED.toString());
 	}
+
+	/**
+	 * @return the wsTaxonomyFolderPath
+	 */
+	public String getWsTaxonomyFolderPath() {
+		return wsTaxonomyFolderPath;
+	}
+
+
+	/**
+	 * @param wsTaxonomyFolderPath the wsTaxonomyFolderPath to set
+	 */
+	public void setWsTaxonomyFolderPath(String wsTaxonomyFolderPath) {
+		this.wsTaxonomyFolderPath = wsTaxonomyFolderPath;
+	}
+
 
 	/**
 	 * @return the wsTaxonomyTempFolderPath
