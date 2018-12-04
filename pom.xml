@@ -18,7 +18,8 @@
 			<id>nexus</id>
 			<name>Nexus BioSystems Server</name>
 			<!-- <url>http://192.168.1.99/nexus/content/groups/public/</url> -->
-			<url>http://193.137.11.210/nexus/content/groups/public/</url>
+			<!-- <url>http://193.137.11.210/nexus/content/groups/public/</url> -->
+			<url>https://www.bio.di.uminho.pt/nexus/content/groups/public/</url>
 		</repository> 
   </repositories> 
   
