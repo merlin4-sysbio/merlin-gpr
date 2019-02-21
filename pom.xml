@@ -13,21 +13,6 @@
 		<pt.uminho.ceb.biosystems.merlin.groupId>pt.uminho.ceb.biosystems.merlin</pt.uminho.ceb.biosystems.merlin.groupId>
 	</properties>
 
-	<repositories>
- 	    <repository>
-			<id>nexus</id>
-			<name>Nexus BioSystems Server</name>
-			<!-- <url>http://192.168.1.99/nexus/content/groups/public/</url> -->
-			<!-- <url>http://193.137.11.210/nexus/content/groups/public/</url> -->
-			<url>https://www.bio.di.uminho.pt/nexus/content/groups/public/</url>
-		</repository> 
-  </repositories> 
-  
-	<!-- <build> <sourceDirectory>D:\workspaces\maven\gpr-rules\src</sourceDirectory> 
-		<scriptSourceDirectory>D:\workspaces\maven\gpr-rules\src\main\scripts</scriptSourceDirectory> 
-		<testSourceDirectory>D:\workspaces\maven\gpr-rules\test</testSourceDirectory> 
-		<outputDirectory>D:\workspaces\maven\gpr-rules\bin\</outputDirectory> <testOutputDirectory>D:\workspaces\maven\gpr-rules\test-bin</testOutputDirectory> 
-		</build> -->
 	<build>
 		<plugins>
 			<plugin>
@@ -96,13 +81,11 @@
 	<distributionManagement>
 		<snapshotRepository>
 			<id>biosystems-snapshots</id>
-			<!-- <url>http://192.168.1.99/nexus/content/repositories/biosystems-snapshots</url> -->
-			<url>http://193.137.11.210/nexus/content/repositories/biosystems-snapshots</url>
+			<url>https://nexus.bio.di.uminho.pt/content/repositories/biosystems-snapshots</url>
 		</snapshotRepository>
 		<repository>
 			<id>biosystems-releases</id>
-			<!-- <url>http://192.168.1.99/nexus/content/repositories/biosystems-releases</url> -->
-			<url>http://193.137.11.210/nexus/content/repositories/biosystems-releases</url>
+			<url>https://nexus.bio.di.uminho.pt/content/repositories/biosystems-releases</url>
 		</repository>
 	</distributionManagement>
 </project>
