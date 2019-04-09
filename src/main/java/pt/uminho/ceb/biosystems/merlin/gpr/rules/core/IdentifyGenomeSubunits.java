@@ -27,7 +27,6 @@ import pt.uminho.ceb.biosystems.merlin.bioapis.externalAPI.ncbi.NcbiAPI;
 import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.HomologyAPI;
 import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.ModelAPI;
 import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.Connection;
-import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.DatabaseAccess;
 import pt.uminho.ceb.biosystems.merlin.local.alignments.core.RunSimilaritySearch;
 import pt.uminho.ceb.biosystems.merlin.utilities.DatabaseProgressStatus;
 import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.AlignmentScoreType;
@@ -37,7 +36,6 @@ import pt.uminho.ceb.biosystems.merlin.utilities.containers.capsules.AlignmentCa
 import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionProteinGeneAssociation;
 import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionsGPR_CI;
 import pt.uminho.ceb.biosystems.merlin.utilities.datastructures.map.MapUtils;
-import pt.uminho.ceb.biosystems.merlin.utilities.io.FileUtils;
 
 /**
  * @author ODias
@@ -52,7 +50,6 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 	private long reference_organism_id;
 	private ConcurrentHashMap<String, AbstractSequence<?>> sequences;
 	private ConcurrentHashMap<String, Set<String>> closestOrtholog;
-	private DatabaseAccess dba;
 	private double similarity_threshold;
 	private Method method;
 	private AtomicBoolean cancel;
@@ -63,6 +60,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 	private long startTime;
 	private String wsTaxonomyTempFolderPath;
 	private String wsTaxonomyFolderPath;
+	private Connection connection;
 
 
 
@@ -72,21 +70,19 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 	 * @param ec_numbers
 	 * @param genome
 	 * @param reference_organism_id
-	 * @param dba
+	 * @param connection
 	 * @param similarity_threshold
 	 * @param referenceTaxonomyThreshold
 	 * @param method
 	 * @param compareToFullGenome
-	 * @param cancel
 	 */
 	public IdentifyGenomeSubunits(Map<String, List<String>> ec_numbers, Map<String, AbstractSequence<?>> genome, long reference_organism_id, 
-			DatabaseAccess dba, double similarity_threshold, double referenceTaxonomyThreshold, Method method, 
+			Connection connection, double similarity_threshold, double referenceTaxonomyThreshold, Method method, 
 			boolean compareToFullGenome) {
 
 		this.ecNumbers = ec_numbers;
 		this.genome = genome;
 		this.reference_organism_id = reference_organism_id;
-		this.dba = dba;
 		this.similarity_threshold = similarity_threshold;
 		this.method = method;
 		this.referenceTaxonomyThreshold = referenceTaxonomyThreshold;
@@ -106,8 +102,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 		try {
 
-			Connection conn = new Connection(this.dba);
-			Statement statement = conn.createStatement();
+			Statement statement = this.connection.createStatement();
 
 			if(!this.ecNumbers.isEmpty()) {
 
@@ -123,7 +118,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 				ConcurrentHashMap<String, Map<String, List<String>>> orthologsSequences = new ConcurrentHashMap<>();;
 				Map<String, String> kegg_taxonomy_ids = IdentifyGenomeSubunits.getKeggTaxonomyIDs();
 
-				Set<String> bypass =  ModelAPI.getECNumbersWithModules(conn);	
+				Set<String> bypass =  ModelAPI.getECNumbersWithModules(connection);	
 				List<String> iterator = new ArrayList<>(this.ecNumbers.keySet());
 				iterator.removeAll(bypass);
 				
@@ -171,7 +166,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 								Map<String,List<ReactionProteinGeneAssociation>> result = gpr.run();
 								logger.info("Retrieved!");
 
-								genes_ko_modules = ModelAPI.loadModule(conn, result);
+								genes_ko_modules = ModelAPI.loadModule(connection, result);
 
 								logger.info("Genes, KO, modules \t{}",genes_ko_modules);
 
@@ -213,7 +208,6 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 								search.setCompareToFullGenome(this.compareToFullGenome);
 
 								if(gapsIdentification){
-//									boolean recursive = false;
 									search.setGapsIdentification(true);
 									search.setSubjectFastaFilePath(this.wsTaxonomyTempFolderPath.concat("GapsFillAnnotationsFile.faa"));
 									alignmentContainerSet = search.run_OrthologGapsSearch(sequenceIdsSet, alignmentContainerSet);//, recursive);
@@ -241,9 +235,9 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 									for(int module_id : modules.keySet()) {
 
 										if(search.getSequencesWithoutSimilarities().containsAll(modules.get(module_id)))
-											ModelAPI.updateECNumberModule(conn, ec_number, module_id);
+											ModelAPI.updateECNumberModule(connection, ec_number, module_id);
 										else
-											ModelAPI.updateECNumberModule(conn, ec_number, module_id);
+											ModelAPI.updateECNumberModule(connection, ec_number, module_id);
 									}
 								}
 
@@ -255,14 +249,14 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 								if(modules.keySet().size()>0) {
 									for(int module_id : modules.keySet()) {
 
-										ModelAPI.updateECNumberModule(conn, ec_number, module_id);
+										ModelAPI.updateECNumberModule(connection, ec_number, module_id);
 									}
 								}
 							}
 						}
 						catch (Exception e) {
 
-							ModelAPI.updateECNumberModuleStatus(conn, ec_number, DatabaseProgressStatus.PROCESSING.toString());
+							ModelAPI.updateECNumberModuleStatus(connection, ec_number, DatabaseProgressStatus.PROCESSING.toString());
 							ret = false;
 							logger.error("error {}",e.getStackTrace().toString());
 							e.printStackTrace();
@@ -270,7 +264,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 					}
 
 					if(ret)
-						IdentifyGenomeSubunits.setECNumberModuleProcessed(conn, ec_number);
+						IdentifyGenomeSubunits.setECNumberModuleProcessed(connection, ec_number);
 
 					if(cancel.get())
 						i = iterator.size();
@@ -279,7 +273,6 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 						progress.setTime(GregorianCalendar.getInstance().getTimeInMillis() - this.startTime, i, iterator.size());
 				}
 			}
-			conn.closeConnection();
 		} 
 		catch (Exception e) {
 

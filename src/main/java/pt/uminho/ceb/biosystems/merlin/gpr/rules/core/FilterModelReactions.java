@@ -1,5 +1,6 @@
 package pt.uminho.ceb.biosystems.merlin.gpr.rules.core;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -13,11 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.ModelAPI;
-import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.Connection;
-import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.DatabaseAccess;
-import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.Enumerators.DatabaseType;
-import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.H2DatabaseAccess;
-import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.MySQLDatabaseAccess;
 import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionsGPR_CI;
 
 /**
@@ -28,8 +24,7 @@ public class FilterModelReactions {
 
 	private static final Logger logger = LoggerFactory.getLogger(FilterModelReactions.class);
 
-	private DatabaseAccess dba;
-	private DatabaseType database_type;
+	private Connection connection;
 	private Map<String, Set<String>> databaseEnzymesReactions;
 	private Map<String, String> annotations; 
 	private boolean originalReactions;
@@ -37,31 +32,12 @@ public class FilterModelReactions {
 	private Set<String> keptWithDifferentAnnotation;
 
 	/**
-	 * @param user
-	 * @param password
-	 * @param server
-	 * @param port
-	 * @param database
-	 * @param originalReactions
-	 */
-	public FilterModelReactions(String user, String password, String server, int port, String database, boolean originalReactions) {
-		
-		if (this.database_type.equals(DatabaseType.MYSQL)) {
-			this.dba = new MySQLDatabaseAccess(user, password, server, port, database);
-		}else{
-			this.dba = new H2DatabaseAccess(user, password, database, null);
-		}
-
-		new FilterModelReactions(dba, originalReactions);
-	}
-
-	/**
 	 * @param dba
 	 * @param originalReactions
 	 */
-	public FilterModelReactions(DatabaseAccess dba, boolean originalReactions) {
+	public FilterModelReactions(Connection connection, boolean originalReactions) {
 
-		this.dba = dba;
+		this.connection = connection;
 		this.databaseEnzymesReactions = new HashMap<>();
 		this.originalReactions = originalReactions;
 
@@ -81,9 +57,7 @@ public class FilterModelReactions {
 
 		Set<String> ret = new HashSet<String>();
 
-		Connection conn = new Connection(this.dba);
-
-		Statement stmt = conn.createStatement();
+		Statement stmt = connection.createStatement();
 
 		ArrayList<String[]> result = ModelAPI.getReactionsFromModel(stmt, this.originalReactions);
 		String [] list;
@@ -102,7 +76,6 @@ public class FilterModelReactions {
 
 			this.databaseEnzymesReactions.put(list[1], reactions);
 		}
-		conn.closeConnection();
 		return ret;
 	}
 
@@ -225,12 +198,10 @@ public class FilterModelReactions {
 
 		Map<String, String> notes_map = new HashMap<>();
 		Set<String> reactionsToKeep = new HashSet<String>();
-		Connection connection = new Connection(this.dba);
 		Statement stmt = connection.createStatement();
 
 		for (String name : this.removed) {
 
-//			ResultSet rs = stmt.executeQuery("SELECT notes, isSpontaneous, isNonEnzymatic, source FROM reaction  WHERE reaction.name='"+name+"'");
 			String[] result = ModelAPI.getReactionsInfo(stmt, name);
 					
 			if(result.length>0) {
@@ -273,17 +244,11 @@ public class FilterModelReactions {
 					reactionsToKeep.add(name);
 			}
 		}
-		connection.closeConnection();
-
 		logger.debug("Removed notes\t"+notes_map);
 
-		java.sql.Connection conn = this.dba.openConnection();
-		
-		PreparedStatement statement = conn.prepareStatement("UPDATE reaction SET inModel=?, notes=? WHERE reaction.name=?");
+		PreparedStatement statement = connection.prepareStatement("UPDATE reaction SET inModel=?, notes=? WHERE reaction.name=?");
 		
 		ModelAPI.removeReactionsFromModel(statement, this.removed, reactionsToKeep, notes_map);
-
-		conn.close();
 	}
 
 	/**
@@ -291,7 +256,6 @@ public class FilterModelReactions {
 	 */
 	public void setModelGPRsFromTool() throws SQLException {
 
-		Connection connection = new Connection(this.dba);
 		Statement stmt = connection.createStatement();
 
 		Map<String, String> notes_map = ModelAPI.createNotesMap(stmt, this.kept);
@@ -302,6 +266,5 @@ public class FilterModelReactions {
 
 		ModelAPI.updateReactionTableWithDifferentAnnotation(statement, this.keptWithDifferentAnnotation, this.annotations, notes_map);
 		
-		connection.closeConnection();
 	}
 }
