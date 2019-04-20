@@ -8,7 +8,8 @@ import java.util.List;
 public class KEGGOrthologyParser implements KEGGOrthologyParserConstants {
   public static boolean VERBOSE = false;
 
-  final public List<List<String >> parseDefinition() throws ParseException {
+  @SuppressWarnings("unused")
+final public List<List<String >> parseDefinition() throws ParseException {
   List<List<String >> aux;
   List<List<String >> ret = new ArrayList<List<String >>();
     label_1:
@@ -41,10 +42,12 @@ public class KEGGOrthologyParser implements KEGGOrthologyParserConstants {
     }
     jj_consume_token(0);
         {if (true) return ret;}
+        
     throw new Error("Missing return statement in function");
   }
 
-  final public List<List<String >> DEF_ELEMENT() throws ParseException {
+  @SuppressWarnings("unused")
+final public List<List<String >> DEF_ELEMENT() throws ParseException {
   String op;
   List<List<String >> aux;
   List<List<String >> ret = null;
@@ -73,7 +76,8 @@ public class KEGGOrthologyParser implements KEGGOrthologyParserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public String OP() throws ParseException {
+  @SuppressWarnings("unused")
+final public String OP() throws ParseException {
   Token op;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case PLUS:
@@ -91,7 +95,8 @@ public class KEGGOrthologyParser implements KEGGOrthologyParserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public List<List<String >> EXPR() throws ParseException {
+  @SuppressWarnings("unused")
+final public List<List<String >> EXPR() throws ParseException {
   List<List<String >> ret = null;
   String termId = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -117,7 +122,8 @@ public class KEGGOrthologyParser implements KEGGOrthologyParserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public List<List<String >> EXPR_ELEMENTS() throws ParseException {
+  @SuppressWarnings("unused")
+final public List<List<String >> EXPR_ELEMENTS() throws ParseException {
         List<List<String >> ret = new ArrayList<List<String >> ();
         List<List<String >> elemSet = null;
         List<List<String >> aux = null;
@@ -167,7 +173,8 @@ public class KEGGOrthologyParser implements KEGGOrthologyParserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public String TERMINAL_ID() throws ParseException {
+  @SuppressWarnings("unused")
+final public String TERMINAL_ID() throws ParseException {
   Token id;
     id = jj_consume_token(ID);
     {if (true) return id.toString();}
