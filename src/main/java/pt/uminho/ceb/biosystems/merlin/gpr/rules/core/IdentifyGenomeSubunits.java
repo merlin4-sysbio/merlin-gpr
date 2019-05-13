@@ -3,15 +3,15 @@
  */
 package pt.uminho.ceb.biosystems.merlin.gpr.rules.core;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -31,7 +31,6 @@ import pt.uminho.ceb.biosystems.merlin.local.alignments.core.RunSimilaritySearch
 import pt.uminho.ceb.biosystems.merlin.utilities.DatabaseProgressStatus;
 import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.AlignmentScoreType;
 import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.Method;
-import pt.uminho.ceb.biosystems.merlin.utilities.TimeLeftProgress;
 import pt.uminho.ceb.biosystems.merlin.utilities.containers.capsules.AlignmentCapsule;
 import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionProteinGeneAssociation;
 import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionsGPR_CI;
@@ -41,7 +40,7 @@ import pt.uminho.ceb.biosystems.merlin.utilities.datastructures.map.MapUtils;
  * @author ODias
  *
  */
-public class IdentifyGenomeSubunits extends Observable implements Observer {
+public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(IdentifyGenomeSubunits.class);
 
@@ -55,12 +54,12 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 	private AtomicBoolean cancel;
 	private double referenceTaxonomyThreshold;
 	private boolean compareToFullGenome;
-	private TimeLeftProgress progress;
 	private ConcurrentLinkedQueue<AlignmentCapsule> findGapsResult;
-	private long startTime;
 	private String wsTaxonomyTempFolderPath;
 	private String wsTaxonomyFolderPath;
 	private Connection connection;
+
+	private PropertyChangeSupport changes;
 
 
 
@@ -80,6 +79,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 			Connection connection, double similarity_threshold, double referenceTaxonomyThreshold, Method method, 
 			boolean compareToFullGenome) {
 
+		this.changes = new PropertyChangeSupport(this);
 		this.ecNumbers = ec_numbers;
 		this.genome = genome;
 		this.reference_organism_id = reference_organism_id;
@@ -88,8 +88,6 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 		this.referenceTaxonomyThreshold = referenceTaxonomyThreshold;
 		this.compareToFullGenome = compareToFullGenome;
 		this.findGapsResult = new ConcurrentLinkedQueue<AlignmentCapsule>();
-		startTime = GregorianCalendar.getInstance().getTimeInMillis();
-
 	}
 
 
@@ -129,6 +127,8 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 				GetClosestOrhologSequence seq = new GetClosestOrhologSequence(referenceTaxonomy, this.sequences, kegg_taxonomy_ids,
 						ncbi_taxonomy_ids, kegg_taxonomy_scores, this.closestOrtholog, orthologsSequences );
+				
+				this.changes.firePropertyChange("size", -1, iterator.size());
 
 				for(int i = 0; i<iterator.size(); i++) {
 
@@ -193,7 +193,7 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 								RunSimilaritySearch search = new RunSimilaritySearch(this.genome, this.similarity_threshold, 
 										this.method, orthologs, this.cancel, new AtomicInteger(0), new AtomicInteger(0), AlignmentScoreType.ALIGNMENT);
 
-								search.addObserver(this);
+								search.addPropertyChangeListener(this);
 								search.setEc_number(ec_number);
 								search.setWorkspaceTaxonomyFolderPath(this.wsTaxonomyFolderPath);
 
@@ -268,9 +268,8 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 
 					if(cancel.get())
 						i = iterator.size();
-
-					if(this.progress!=null)
-						progress.setTime(GregorianCalendar.getInstance().getTimeInMillis() - this.startTime, i, iterator.size());
+					else
+						this.changes.firePropertyChange("sequencesCounter", i-1, i);
 				}
 			}
 		} 
@@ -380,13 +379,25 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 		this.wsTaxonomyTempFolderPath = wsTaxonomyTempFolderPath;
 	}
 
+	/**
+	 * @param l
+	 */
+	public void addPropertyChangeListener(PropertyChangeListener l) {
+		changes.addPropertyChangeListener(l);
+	}
 
 	/**
-	 * @param progress
+	 * @param l
 	 */
-	public void setProgress(TimeLeftProgress progress) {
+	public void removePropertyChangeListener(PropertyChangeListener l) {
+		changes.removePropertyChangeListener(l);
+	}
 
-		this.progress = progress;
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		
+		this.changes.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());				
 	}
 
 	/**
@@ -395,13 +406,5 @@ public class IdentifyGenomeSubunits extends Observable implements Observer {
 	public void setCancel(AtomicBoolean cancel) {
 
 		this.cancel = cancel;
-	}
-
-
-	@Override
-	public void update(Observable arg0, Object arg1) {
-
-		setChanged();
-		notifyObservers();
 	}
 }
