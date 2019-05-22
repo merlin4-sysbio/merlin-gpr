@@ -1,6 +1,6 @@
 package pt.uminho.ceb.biosystems.merlin.gpr.rules.grammar;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 
