@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>pt.uminho.ceb.biosystems.merlin</groupId>
@@ -43,11 +44,16 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>${pt.uminho.ceb.biosystems.merlin.groupId}</groupId>
 			<artifactId>merlin-databaseConnector</artifactId>
+			<version>${pt.uminho.ceb.biosystems.merlin.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${pt.uminho.ceb.biosystems.merlin.groupId}</groupId>
+			<artifactId>merlin-services</artifactId>
 			<version>${pt.uminho.ceb.biosystems.merlin.version}</version>
 		</dependency>
 		<dependency>
@@ -61,7 +67,7 @@
 			<version>${pt.uminho.ceb.biosystems.merlin.version}</version>
 		</dependency>
 	</dependencies>
-	
+
 	<distributionManagement>
 		<snapshotRepository>
 			<id>biosystems-snapshots</id>

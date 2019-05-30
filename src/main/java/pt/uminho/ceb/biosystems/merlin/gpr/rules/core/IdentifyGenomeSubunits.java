@@ -28,6 +28,8 @@ import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.HomologyAP
 import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.ModelAPI;
 import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.Connection;
 import pt.uminho.ceb.biosystems.merlin.local.alignments.core.RunSimilaritySearch;
+import pt.uminho.ceb.biosystems.merlin.services.model.ModelGenesServices;
+import pt.uminho.ceb.biosystems.merlin.services.model.ModelSequenceServices;
 import pt.uminho.ceb.biosystems.merlin.utilities.DatabaseProgressStatus;
 import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.AlignmentScoreType;
 import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.Method;
@@ -122,7 +124,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 				
 				logger.info("Iterator size: {}, entries {}", iterator.size(), iterator);
 
-				Map<String, Integer> geneIds = ModelAPI.getGeneIds(statement);
+				Map<String, Integer> geneIds = ModelGenesServices.getGeneIDsByQuery(connection.getDatabaseName());
 				Map<String, List<String>> sequenceIdsSet = ModelAPI.getSequenceIds(statement);
 
 				GetClosestOrhologSequence seq = new GetClosestOrhologSequence(referenceTaxonomy, this.sequences, kegg_taxonomy_ids,
