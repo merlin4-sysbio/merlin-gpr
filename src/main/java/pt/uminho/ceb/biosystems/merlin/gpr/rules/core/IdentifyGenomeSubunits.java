@@ -80,7 +80,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	public IdentifyGenomeSubunits(Map<String, List<String>> ec_numbers, Map<String, AbstractSequence<?>> genome, long reference_organism_id, 
 			Connection connection, double similarity_threshold, double referenceTaxonomyThreshold, Method method, 
 			boolean compareToFullGenome) {
-
+		this.connection = connection;
 		this.changes = new PropertyChangeSupport(this);
 		this.ecNumbers = ec_numbers;
 		this.genome = genome;
@@ -165,8 +165,16 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 								logger.info("Retrieving GPR for {} ...",ec_number);
 								AssembleGPR gpr = new AssembleGPR(ec_number);
-								Map<String,List<ReactionProteinGeneAssociation>> result = gpr.run();
-								logger.info("Retrieved!");
+								
+								Map<String, List<ReactionProteinGeneAssociation>> result;
+								try {
+									result = gpr.run();
+									logger.info("Retrieved!");
+								} catch (Exception e) {
+									logger.error("Failed to retrieve GPR from KEGG for " + String.valueOf(ec_number));
+									e.printStackTrace();
+									result = new HashMap<String, List<ReactionProteinGeneAssociation>>();
+								}
 
 								genes_ko_modules = ModelAPI.loadModule(connection, result);
 
