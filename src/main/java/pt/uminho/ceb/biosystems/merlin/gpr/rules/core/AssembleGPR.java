@@ -17,13 +17,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pt.uminho.ceb.biosystems.merlin.bioapis.externalAPI.kegg.KeggAPI;
+import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.GeneAssociation;
+import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ModuleCI;
+import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ProteinGeneAssociation;
+import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionProteinGeneAssociation;
 import pt.uminho.ceb.biosystems.merlin.gpr.rules.core.input.KeggModulesParser;
 import pt.uminho.ceb.biosystems.merlin.gpr.rules.grammar.KEGGOrthologyParser;
 import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.ModuleType;
-import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.GeneAssociation;
-import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ModuleCI;
-import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ProteinGeneAssociation;
-import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionProteinGeneAssociation;
 
 
 /**

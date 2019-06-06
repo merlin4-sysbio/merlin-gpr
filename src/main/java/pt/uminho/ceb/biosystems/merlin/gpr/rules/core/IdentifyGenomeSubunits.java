@@ -24,6 +24,9 @@ import org.slf4j.LoggerFactory;
 
 import pt.uminho.ceb.biosystems.merlin.bioapis.externalAPI.kegg.KeggAPI;
 import pt.uminho.ceb.biosystems.merlin.bioapis.externalAPI.ncbi.NcbiAPI;
+import pt.uminho.ceb.biosystems.merlin.core.containers.alignment.AlignmentContainer;
+import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionProteinGeneAssociation;
+import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionsGPR_CI;
 import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.HomologyAPI;
 import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.ModelAPI;
 import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.Connection;
@@ -32,9 +35,6 @@ import pt.uminho.ceb.biosystems.merlin.services.model.ModelGenesServices;
 import pt.uminho.ceb.biosystems.merlin.utilities.DatabaseProgressStatus;
 import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.AlignmentScoreType;
 import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.Method;
-import pt.uminho.ceb.biosystems.merlin.utilities.containers.alignment.AlignmentContainer;
-import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionProteinGeneAssociation;
-import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionsGPR_CI;
 import pt.uminho.ceb.biosystems.merlin.utilities.datastructures.map.MapUtils;
 
 /**
