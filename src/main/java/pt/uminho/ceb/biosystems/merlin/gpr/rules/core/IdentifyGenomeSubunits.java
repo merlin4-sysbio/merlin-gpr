@@ -29,11 +29,10 @@ import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.ModelAPI;
 import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.Connection;
 import pt.uminho.ceb.biosystems.merlin.local.alignments.core.RunSimilaritySearch;
 import pt.uminho.ceb.biosystems.merlin.services.model.ModelGenesServices;
-import pt.uminho.ceb.biosystems.merlin.services.model.ModelSequenceServices;
 import pt.uminho.ceb.biosystems.merlin.utilities.DatabaseProgressStatus;
 import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.AlignmentScoreType;
 import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.Method;
-import pt.uminho.ceb.biosystems.merlin.utilities.containers.capsules.AlignmentCapsule;
+import pt.uminho.ceb.biosystems.merlin.utilities.containers.alignment.AlignmentContainer;
 import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionProteinGeneAssociation;
 import pt.uminho.ceb.biosystems.merlin.utilities.containers.gpr.ReactionsGPR_CI;
 import pt.uminho.ceb.biosystems.merlin.utilities.datastructures.map.MapUtils;
@@ -56,7 +55,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	private AtomicBoolean cancel;
 	private double referenceTaxonomyThreshold;
 	private boolean compareToFullGenome;
-	private ConcurrentLinkedQueue<AlignmentCapsule> findGapsResult;
+	private ConcurrentLinkedQueue<AlignmentContainer> findGapsResult;
 	private String wsTaxonomyTempFolderPath;
 	private String wsTaxonomyFolderPath;
 	private Connection connection;
@@ -89,7 +88,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 		this.method = method;
 		this.referenceTaxonomyThreshold = referenceTaxonomyThreshold;
 		this.compareToFullGenome = compareToFullGenome;
-		this.findGapsResult = new ConcurrentLinkedQueue<AlignmentCapsule>();
+		this.findGapsResult = new ConcurrentLinkedQueue<AlignmentContainer>();
 	}
 
 
@@ -196,7 +195,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 							logger.info("Orthologs to be searched in genome:\t{}\t{}", orthologs.size(), orthologs.keySet());
 
-							ConcurrentLinkedQueue<AlignmentCapsule> alignmentContainerSet = new ConcurrentLinkedQueue<>();					/////// no outro o concurrent linked queue está aqui
+							ConcurrentLinkedQueue<AlignmentContainer> alignmentContainerSet = new ConcurrentLinkedQueue<>();					/////// no outro o concurrent linked queue está aqui
 
 							if(orthologs.size()>0) {
 
@@ -228,7 +227,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 								}
 
 
-								for (AlignmentCapsule capsule : alignmentContainerSet) {
+								for (AlignmentContainer capsule : alignmentContainerSet) {
 
 									if(geneIds.get(capsule.getTarget()) != null) 
 										HomologyAPI.loadOrthologsInfo(capsule, geneIds, statement);
@@ -298,7 +297,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	/**
 	 * @return
 	 */
-	public ConcurrentLinkedQueue<AlignmentCapsule> findGapsResult(){
+	public ConcurrentLinkedQueue<AlignmentContainer> findGapsResult(){
 
 		return this.findGapsResult;
 	}
