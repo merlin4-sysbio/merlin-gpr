@@ -56,7 +56,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	private double referenceTaxonomyThreshold;
 	private boolean compareToFullGenome;
 	private ConcurrentLinkedQueue<AlignmentContainer> findGapsResult;
-	private String wsTaxonomyTempFolderPath;
+//	private String wsTaxonomyTempFolderPath;
 	private String wsTaxonomyFolderPath;
 	private Connection connection;
 
@@ -218,11 +218,11 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 								if(gapsIdentification){
 									search.setGapsIdentification(true);
-									search.setSubjectFastaFilePath(this.wsTaxonomyTempFolderPath.concat("GapsFillAnnotationsFile.faa"));
+									search.setSubjectFastaFilePath(this.wsTaxonomyFolderPath.concat("GapsFillAnnotationsFile.faa"));
 									alignmentContainerSet = search.run_OrthologGapsSearch(sequenceIdsSet, alignmentContainerSet);//, recursive);
 								}
 								else{
-									search.setSubjectFastaFilePath(this.wsTaxonomyTempFolderPath.concat("gprsAnnotationsFile.faa"));
+									search.setSubjectFastaFilePath(this.wsTaxonomyFolderPath.concat("gprsAnnotationsFile.faa"));
 									alignmentContainerSet = search.run_OrthologsSearch(sequenceIdsSet, alignmentContainerSet);
 								}
 
@@ -373,20 +373,20 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	}
 
 
-	/**
-	 * @return the wsTaxonomyTempFolderPath
-	 */
-	public String getWsTaxonomyTempFolderPath() {
-		return wsTaxonomyTempFolderPath;
-	}
-
-
-	/**
-	 * @param wsTaxonomyTempFolderPath the wsTaxonomyTempFolderPath to set
-	 */
-	public void setWsTaxonomyTempFolderPath(String wsTaxonomyTempFolderPath) {
-		this.wsTaxonomyTempFolderPath = wsTaxonomyTempFolderPath;
-	}
+//	/**
+//	 * @return the wsTaxonomyTempFolderPath
+//	 */
+//	public String getWsTaxonomyTempFolderPath() {
+//		return wsTaxonomyTempFolderPath;
+//	}
+//
+//
+//	/**
+//	 * @param wsTaxonomyTempFolderPath the wsTaxonomyTempFolderPath to set
+//	 */
+//	public void setWsTaxonomyTempFolderPath(String wsTaxonomyTempFolderPath) {
+//		this.wsTaxonomyTempFolderPath = wsTaxonomyTempFolderPath;
+//	}
 
 	/**
 	 * @param l
