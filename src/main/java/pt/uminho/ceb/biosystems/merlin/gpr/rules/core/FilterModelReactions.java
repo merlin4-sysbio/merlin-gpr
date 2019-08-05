@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionsGPR_CI;
 import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.ModelAPI;
 import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.Connection;
+import pt.uminho.ceb.biosystems.merlin.services.model.ModelReactionsServices;
 
 /**
  * @author ODias
@@ -31,13 +32,16 @@ public class FilterModelReactions {
 	private Set<String> removed , kept, no_gpr;
 	private Set<String> keptWithDifferentAnnotation;
 
+	private String workspaceName;
+
 	/**
 	 * @param dba
 	 * @param originalReactions
 	 */
-	public FilterModelReactions(Connection connection, boolean originalReactions) {
+	public FilterModelReactions(Connection connection, String workspaceName, boolean originalReactions) {
 
 		this.connection = connection;
+		this.workspaceName = workspaceName;
 		this.databaseEnzymesReactions = new HashMap<>();
 		this.originalReactions = originalReactions;
 
@@ -194,77 +198,22 @@ public class FilterModelReactions {
 	 * @param keepManualReactions
 	 * @throws SQLException
 	 */
-	public void removeReactionsFromModel(boolean keepReactionsWithNotes, boolean keepManualReactions) throws SQLException {
+	public void removeReactionsFromModel(boolean keepReactionsWithNotes, boolean keepManualReactions) throws Exception {
 
-		Map<String, String> notes_map = new HashMap<>();
-		Set<String> reactionsToKeep = new HashSet<String>();
-		Statement stmt = connection.createStatement();
-
-		for (String name : this.removed) {
-
-			String[] result = ModelAPI.getReactionsInfo(stmt, name);
-					
-			if(result.length>0) {
-				
-				String old_note = result[0];
-
-				if(old_note!=null && !old_note.isEmpty()) {
-
-					if(keepReactionsWithNotes) {
-
-						reactionsToKeep.add(name);
-					}
-					else {
-
-						old_note = old_note.replaceAll(" \\| Removed by GPR rule","");
-						old_note = old_note.replaceAll("Removed by GPR rule","");
-
-						if(old_note.contains("new Annotation. automatic GPR")) {
-
-							String[] data = old_note.split(" \\| ");
-
-							if(data.length>2)
-								old_note+=" | "+data[2];
-						}
-
-						if(old_note.contains("automatic GPR")) {
-
-							String[] data = old_note.split(" \\| ");
-
-							if(data.length>2)
-								old_note+=" | "+data[2];
-						}
-						notes_map.put(name, old_note);
-					}
-				}
-				if(Boolean.valueOf(result[1]) || Boolean.valueOf(result[2]))
-					reactionsToKeep.add(name);
-
-				if(keepManualReactions && result[3].equalsIgnoreCase("MANUAL"))
-					reactionsToKeep.add(name);
-			}
-		}
-		logger.debug("Removed notes\t"+notes_map);
-
-		PreparedStatement statement = connection.prepareStatement("UPDATE reaction SET inModel=?, notes=? WHERE reaction.name=?");
-		
-		ModelAPI.removeReactionsFromModel(statement, this.removed, reactionsToKeep, notes_map);
+		ModelReactionsServices.removeReactionsFromModelByBooleanRule(this.workspaceName, 
+				new ArrayList<String>(this.removed), keepReactionsWithNotes, keepManualReactions);
 	}
 
 	/**
 	 * @throws SQLException
 	 */
-	public void setModelGPRsFromTool() throws SQLException {
-
-		Statement stmt = connection.createStatement();
-
-		Map<String, String> notes_map = ModelAPI.createNotesMap(stmt, this.kept);
-
-		PreparedStatement statement = connection.prepareStatement("UPDATE reaction SET boolean_rule=?, notes=? WHERE reaction.name=?");
-
-		ModelAPI.updateReactionTable(statement, this.kept, this.annotations, notes_map);
-
-		ModelAPI.updateReactionTableWithDifferentAnnotation(statement, this.keptWithDifferentAnnotation, this.annotations, notes_map);
+	public void setModelGPRsFromTool() throws Exception {
 		
+		ModelReactionsServices.updateBooleanRuleAndNotes(this.workspaceName, new ArrayList<String>(this.kept),
+				this.annotations, "automatic GPR");
+		
+		ModelReactionsServices.updateBooleanRuleAndNotes(this.workspaceName, new ArrayList<String>(this.keptWithDifferentAnnotation), 
+				this.annotations, "New Annotation. GPR set from tool");
+
 	}
 }
