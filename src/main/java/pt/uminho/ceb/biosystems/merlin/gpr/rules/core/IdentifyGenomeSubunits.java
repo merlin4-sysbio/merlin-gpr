@@ -31,6 +31,7 @@ import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.HomologyAP
 import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.ModelAPI;
 import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.Connection;
 import pt.uminho.ceb.biosystems.merlin.local.alignments.core.RunSimilaritySearch;
+import pt.uminho.ceb.biosystems.merlin.services.model.ModelEnzymesServices;
 import pt.uminho.ceb.biosystems.merlin.services.model.ModelGenesServices;
 import pt.uminho.ceb.biosystems.merlin.utilities.DatabaseProgressStatus;
 import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.AlignmentScoreType;
@@ -95,7 +96,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	/**
 	 * @throws Exception
 	 */
-	public boolean runIdentification(boolean gapsIdentification) throws Exception {
+	public boolean runIdentification(boolean gapsIdentification, String databaseName) throws Exception {
 
 		boolean ret = true;
 
@@ -117,7 +118,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 				ConcurrentHashMap<String, Map<String, List<String>>> orthologsSequences = new ConcurrentHashMap<>();;
 				Map<String, String> kegg_taxonomy_ids = IdentifyGenomeSubunits.getKeggTaxonomyIDs();
 
-				Set<String> bypass =  ModelAPI.getECNumbersWithModules(connection);	
+				List<String> bypass =  ModelEnzymesServices.getECNumbersWithModules(databaseName);	
 				List<String> iterator = new ArrayList<>(this.ecNumbers.keySet());
 				iterator.removeAll(bypass);
 				
