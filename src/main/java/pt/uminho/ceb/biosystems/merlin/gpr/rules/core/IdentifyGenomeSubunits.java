@@ -266,7 +266,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 						}
 						catch (Exception e) {
 
-							ModelAPI.updateECNumberModuleStatus(connection, ec_number, DatabaseProgressStatus.PROCESSING.toString());
+							ModelEnzymesServices.updateECNumberModuleStatus(databaseName, ec_number, DatabaseProgressStatus.PROCESSING.toString());
 							ret = false;
 							logger.error("error {}",e.getStackTrace().toString());
 							e.printStackTrace();
@@ -274,7 +274,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 					}
 
 					if(ret)
-						IdentifyGenomeSubunits.setECNumberModuleProcessed(connection, ec_number);
+						IdentifyGenomeSubunits.setECNumberModuleProcessed(databaseName, ec_number);
 
 					if(cancel.get())
 						i = iterator.size();
@@ -353,9 +353,10 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	 * @param ec_number
 	 * @throws SQLException 
 	 */
-	public static void setECNumberModuleProcessed(Connection conn, String ec_number) throws SQLException {
+	public static void setECNumberModuleProcessed(String databaseName, String ec_number) throws Exception {
 
-		ModelAPI.updateECNumberModuleStatus(conn, ec_number,DatabaseProgressStatus.PROCESSED.toString());
+		ModelEnzymesServices.updateECNumberModuleStatus(databaseName, ec_number, DatabaseProgressStatus.PROCESSING.toString());
+
 	}
 
 	/**
