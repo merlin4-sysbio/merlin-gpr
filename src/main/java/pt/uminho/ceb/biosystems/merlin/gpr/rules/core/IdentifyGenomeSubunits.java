@@ -125,7 +125,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 				logger.info("Iterator size: {}, entries {}", iterator.size(), iterator);
 
 				Map<String, Integer> geneIds = ModelGenesServices.getGeneIDsByQuery(connection.getDatabaseName());
-				Map<String, List<String>> sequenceIdsSet = ModelAPI.getSequenceIds(statement);
+				Map<String, Set<String>> sequenceIdsSet = ModelGenesServices.getSequenceIds(databaseName);
 
 				GetClosestOrhologSequence seq = new GetClosestOrhologSequence(referenceTaxonomy, this.sequences, kegg_taxonomy_ids,
 						ncbi_taxonomy_ids, kegg_taxonomy_scores, this.closestOrtholog, orthologsSequences );
@@ -150,7 +150,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 								
 								for(String ko : kos) {
 									
-									List<String> sequenceID = sequenceIdsSet.get(ko);
+									Set<String> sequenceID = sequenceIdsSet.get(ko);
 									
 									if(sequenceID == null || sequenceID.isEmpty()) {
 
@@ -182,7 +182,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 								for(String ko : genes_ko_modules.keySet()) { 
 
-									List<String> sequenceID = sequenceIdsSet.get(ko);
+									Set<String> sequenceID = sequenceIdsSet.get(ko);
 
 									if(sequenceID == null || sequenceID.isEmpty()) {
 
