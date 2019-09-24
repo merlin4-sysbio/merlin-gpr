@@ -1,6 +1,5 @@
 package pt.uminho.ceb.biosystems.merlin.gpr.rules.core;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
