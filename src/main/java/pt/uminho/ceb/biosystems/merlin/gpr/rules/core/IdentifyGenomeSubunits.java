@@ -57,7 +57,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	private double referenceTaxonomyThreshold;
 	private boolean compareToFullGenome;
 	private ConcurrentLinkedQueue<AlignmentContainer> findGapsResult;
-//	private String wsTaxonomyTempFolderPath;
+	//	private String wsTaxonomyTempFolderPath;
 	private String wsTaxonomyFolderPath;
 	private Connection connection;
 
@@ -121,7 +121,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 				List<String> bypass =  ModelEnzymesServices.getECNumbersWithModules(databaseName);	
 				List<String> iterator = new ArrayList<>(this.ecNumbers.keySet());
 				iterator.removeAll(bypass);
-				
+
 				logger.info("Iterator size: {}, entries {}", iterator.size(), iterator);
 
 				Map<String, Integer> geneIds = ModelGenesServices.getGeneIDsByQuery(connection.getDatabaseName());
@@ -129,13 +129,13 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 				GetClosestOrhologSequence seq = new GetClosestOrhologSequence(referenceTaxonomy, this.sequences, kegg_taxonomy_ids,
 						ncbi_taxonomy_ids, kegg_taxonomy_scores, this.closestOrtholog, orthologsSequences );
-				
+
 				this.changes.firePropertyChange("size", -1, iterator.size());
 
 				for(int i = 0; i<iterator.size(); i++) {
 
 					String ec_number = iterator.get(i);
-					
+
 					if(!hasLetters(ec_number) && !bypass.contains(ec_number) && ec_number != null) {
 
 						try {
@@ -147,17 +147,20 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 							if(gapsIdentification) {
 
 								List<String> kos =	AssembleGPR.getOrthologsByECnumber(ec_number);
-								
+
 								for(String ko : kos) {
-									
-									Set<String> sequenceID = sequenceIdsSet.get(ko);
-									
-									if(sequenceID == null || sequenceID.isEmpty()) {
 
-										seq.getOrthologs(ko);
+									if(sequenceIdsSet != null) {
 
-										for(String gene : this.closestOrtholog.get(ko))
-											orthologs.put(gene, this.sequences.get(gene));
+										Set<String> sequenceID = sequenceIdsSet.get(ko);
+
+										if(sequenceID == null || sequenceID.isEmpty()) {
+
+											seq.getOrthologs(ko);
+
+											for(String gene : this.closestOrtholog.get(ko))
+												orthologs.put(gene, this.sequences.get(gene));
+										}
 									}
 								}
 							}
@@ -165,7 +168,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 								logger.info("Retrieving GPR for {} ...",ec_number);
 								AssembleGPR gpr = new AssembleGPR(ec_number);
-								
+
 								Map<String, List<ReactionProteinGeneAssociation>> result;
 								try {
 									result = gpr.run();
@@ -181,6 +184,8 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 								logger.info("Genes, KO, modules \t{}",genes_ko_modules);
 
 								for(String ko : genes_ko_modules.keySet()) { 
+									
+									if(sequenceIdsSet != null) {
 
 									Set<String> sequenceID = sequenceIdsSet.get(ko);
 
@@ -190,6 +195,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 										for(String gene : this.closestOrtholog.get(ko))
 											orthologs.put(gene, this.sequences.get(gene));
+									}
 									}
 								}
 							}
@@ -238,31 +244,11 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 									this.findGapsResult.addAll(alignmentContainerSet);
 								}
-								else {
-
-									Map<Integer, Set<String>> modules = MapUtils.revertMapFromSet(genes_ko_modules);
-
-									for(int module_id : modules.keySet()) {
-
-										if(search.getSequencesWithoutSimilarities().containsAll(modules.get(module_id)))
-											ModelAPI.updateECNumberModule(connection, ec_number, module_id);
-										else
-											ModelAPI.updateECNumberModule(connection, ec_number, module_id);
-									}
-								}
-
-							}
-							else { 
+	
 								
-								Map<Integer, Set<String>> modules = MapUtils.revertMapFromSet(genes_ko_modules);
 
-								if(modules.keySet().size()>0) {
-									for(int module_id : modules.keySet()) {
-
-										ModelAPI.updateECNumberModule(connection, ec_number, module_id);
-									}
-								}
 							}
+
 						}
 						catch (Exception e) {
 
@@ -375,20 +361,20 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	}
 
 
-//	/**
-//	 * @return the wsTaxonomyTempFolderPath
-//	 */
-//	public String getWsTaxonomyTempFolderPath() {
-//		return wsTaxonomyTempFolderPath;
-//	}
-//
-//
-//	/**
-//	 * @param wsTaxonomyTempFolderPath the wsTaxonomyTempFolderPath to set
-//	 */
-//	public void setWsTaxonomyTempFolderPath(String wsTaxonomyTempFolderPath) {
-//		this.wsTaxonomyTempFolderPath = wsTaxonomyTempFolderPath;
-//	}
+	//	/**
+	//	 * @return the wsTaxonomyTempFolderPath
+	//	 */
+	//	public String getWsTaxonomyTempFolderPath() {
+	//		return wsTaxonomyTempFolderPath;
+	//	}
+	//
+	//
+	//	/**
+	//	 * @param wsTaxonomyTempFolderPath the wsTaxonomyTempFolderPath to set
+	//	 */
+	//	public void setWsTaxonomyTempFolderPath(String wsTaxonomyTempFolderPath) {
+	//		this.wsTaxonomyTempFolderPath = wsTaxonomyTempFolderPath;
+	//	}
 
 	/**
 	 * @param l
@@ -407,7 +393,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		
+
 		this.changes.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());				
 	}
 
