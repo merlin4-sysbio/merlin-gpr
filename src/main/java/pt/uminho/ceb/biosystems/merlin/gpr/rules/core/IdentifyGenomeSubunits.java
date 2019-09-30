@@ -7,7 +7,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,11 +27,11 @@ import pt.uminho.ceb.biosystems.merlin.core.containers.alignment.AlignmentContai
 import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionProteinGeneAssociation;
 import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionsGPR_CI;
 import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.HomologyAPI;
-import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.ModelAPI;
-import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.Connection;
 import pt.uminho.ceb.biosystems.merlin.local.alignments.core.RunSimilaritySearch;
 import pt.uminho.ceb.biosystems.merlin.services.model.ModelEnzymesServices;
 import pt.uminho.ceb.biosystems.merlin.services.model.ModelGenesServices;
+import pt.uminho.ceb.biosystems.merlin.services.model.ModelModuleServices;
+import pt.uminho.ceb.biosystems.merlin.services.model.ModelReactionsServices;
 import pt.uminho.ceb.biosystems.merlin.utilities.DatabaseProgressStatus;
 import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.AlignmentScoreType;
 import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.Method;
@@ -59,7 +58,6 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	private ConcurrentLinkedQueue<AlignmentContainer> findGapsResult;
 	//	private String wsTaxonomyTempFolderPath;
 	private String wsTaxonomyFolderPath;
-	private Connection connection;
 
 	private PropertyChangeSupport changes;
 
@@ -78,9 +76,8 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	 * @param compareToFullGenome
 	 */
 	public IdentifyGenomeSubunits(Map<String, List<String>> ec_numbers, Map<String, AbstractSequence<?>> genome, long reference_organism_id, 
-			Connection connection, double similarity_threshold, double referenceTaxonomyThreshold, Method method, 
+			double similarity_threshold, double referenceTaxonomyThreshold, Method method, 
 			boolean compareToFullGenome) {
-		this.connection = connection;
 		this.changes = new PropertyChangeSupport(this);
 		this.ecNumbers = ec_numbers;
 		this.genome = genome;
@@ -102,8 +99,6 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 		try {
 
-			Statement statement = this.connection.createStatement();
-
 			if(!this.ecNumbers.isEmpty()) {
 
 				this.sequences = new ConcurrentHashMap<>();
@@ -124,7 +119,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 				logger.info("Iterator size: {}, entries {}", iterator.size(), iterator);
 
-				Map<String, Integer> geneIds = ModelGenesServices.getGeneIDsByQuery(connection.getDatabaseName());
+				Map<String, Integer> geneIds = ModelGenesServices.getGeneIDsByQuery(databaseName);
 				Map<String, Set<String>> sequenceIdsSet = ModelGenesServices.getSequenceIds(databaseName);
 
 				GetClosestOrhologSequence seq = new GetClosestOrhologSequence(referenceTaxonomy, this.sequences, kegg_taxonomy_ids,
@@ -179,7 +174,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 									result = new HashMap<String, List<ReactionProteinGeneAssociation>>();
 								}
 
-								genes_ko_modules = ModelAPI.loadModule(connection, result);
+								genes_ko_modules = ModelModuleServices.loadModule(databaseName, result);
 
 								logger.info("Genes, KO, modules \t{}",genes_ko_modules);
 
@@ -202,7 +197,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 							logger.info("Orthologs to be searched in genome:\t{}\t{}", orthologs.size(), orthologs.keySet());
 
-							ConcurrentLinkedQueue<AlignmentContainer> alignmentContainerSet = new ConcurrentLinkedQueue<>();					/////// no outro o concurrent linked queue está aqui
+							ConcurrentLinkedQueue<AlignmentContainer> alignmentContainerSet = new ConcurrentLinkedQueue<>();
 
 							if(orthologs.size()>0) {
 
@@ -237,7 +232,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 								for (AlignmentContainer capsule : alignmentContainerSet) {
 
 									if(geneIds.get(capsule.getTarget()) != null) 
-										HomologyAPI.loadOrthologsInfo(capsule, geneIds, statement);
+										HomologyAPI.loadOrthologsInfo(capsule, geneIds, null);
 								}
 
 								if(gapsIdentification) {
@@ -295,10 +290,10 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	 * @param threshold 
 	 * @throws SQLException
 	 */
-	public static Map<String, ReactionsGPR_CI> runGPRsAssignment(double threshold, Connection conn) throws SQLException {
+	public static Map<String, ReactionsGPR_CI> runGPRsAssignment(String databaseName, double threshold) throws Exception {
 
 
-		return ModelAPI.runGPRsAssignment(threshold, conn);
+		return ModelReactionsServices.runGPRsAssignment(databaseName, threshold);
 	}
 
 	/**
