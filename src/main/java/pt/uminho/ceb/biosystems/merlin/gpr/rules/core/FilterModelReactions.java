@@ -1,7 +1,7 @@
+
 package pt.uminho.ceb.biosystems.merlin.gpr.rules.core;
 
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,9 +11,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionsGPR_CI;
-import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.ModelAPI;
-import pt.uminho.ceb.biosystems.merlin.database.connector.datatypes.Connection;
 import pt.uminho.ceb.biosystems.merlin.services.model.ModelReactionsServices;
 
 /**
@@ -24,7 +21,6 @@ public class FilterModelReactions {
 
 	private static final Logger logger = LoggerFactory.getLogger(FilterModelReactions.class);
 
-	private Connection connection;
 	private Map<String, Set<String>> databaseEnzymesReactions;
 	private Map<String, String> annotations; 
 	private boolean originalReactions;
@@ -37,9 +33,8 @@ public class FilterModelReactions {
 	 * @param dba
 	 * @param originalReactions
 	 */
-	public FilterModelReactions(Connection connection, String workspaceName, boolean originalReactions) {
+	public FilterModelReactions(String workspaceName, boolean originalReactions) {
 
-		this.connection = connection;
 		this.workspaceName = workspaceName;
 		this.databaseEnzymesReactions = new HashMap<>();
 		this.originalReactions = originalReactions;
@@ -77,3 +72,4 @@ public class FilterModelReactions {
 
 	}
 }
+
