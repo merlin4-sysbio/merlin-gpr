@@ -1,3 +1,4 @@
+
 package pt.uminho.ceb.biosystems.merlin.gpr.rules.core;
 
 import java.sql.SQLException;
@@ -71,3 +72,4 @@ public class FilterModelReactions {
 
 	}
 }
+
