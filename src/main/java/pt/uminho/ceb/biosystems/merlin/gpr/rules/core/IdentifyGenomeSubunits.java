@@ -26,8 +26,8 @@ import pt.uminho.ceb.biosystems.merlin.bioapis.externalAPI.ncbi.NcbiAPI;
 import pt.uminho.ceb.biosystems.merlin.core.containers.alignment.AlignmentContainer;
 import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionProteinGeneAssociation;
 import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionsGPR_CI;
-import pt.uminho.ceb.biosystems.merlin.database.connector.databaseAPI.HomologyAPI;
 import pt.uminho.ceb.biosystems.merlin.local.alignments.core.RunSimilaritySearch;
+import pt.uminho.ceb.biosystems.merlin.services.annotation.AnnotationEnzymesServices;
 import pt.uminho.ceb.biosystems.merlin.services.model.ModelEnzymesServices;
 import pt.uminho.ceb.biosystems.merlin.services.model.ModelGenesServices;
 import pt.uminho.ceb.biosystems.merlin.services.model.ModelModuleServices;
@@ -231,19 +231,15 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 								for (AlignmentContainer capsule : alignmentContainerSet) {
 
-									if(geneIds.get(capsule.getTarget()) != null) 
-										HomologyAPI.loadOrthologsInfo(capsule, geneIds, null);
+									if(geneIds.get(capsule.getTarget()) != null)
+										AnnotationEnzymesServices.loadOrthologsInfo(databaseName, capsule, geneIds);
 								}
 
 								if(gapsIdentification) {
 
 									this.findGapsResult.addAll(alignmentContainerSet);
 								}
-	
-								
-
 							}
-
 						}
 						catch (Exception e) {
 
