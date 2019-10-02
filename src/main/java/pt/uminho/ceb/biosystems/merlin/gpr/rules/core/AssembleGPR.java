@@ -21,9 +21,9 @@ import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.GeneAssociation;
 import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ModuleCI;
 import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ProteinGeneAssociation;
 import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionProteinGeneAssociation;
+import pt.uminho.ceb.biosystems.merlin.core.utilities.Enumerators.ModuleType;
 import pt.uminho.ceb.biosystems.merlin.gpr.rules.core.input.KeggModulesParser;
 import pt.uminho.ceb.biosystems.merlin.gpr.rules.grammar.KEGGOrthologyParser;
-import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.ModuleType;
 
 
 /**

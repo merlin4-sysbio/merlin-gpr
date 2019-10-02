@@ -26,6 +26,8 @@ import pt.uminho.ceb.biosystems.merlin.bioapis.externalAPI.ncbi.NcbiAPI;
 import pt.uminho.ceb.biosystems.merlin.core.containers.alignment.AlignmentContainer;
 import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionProteinGeneAssociation;
 import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionsGPR_CI;
+import pt.uminho.ceb.biosystems.merlin.core.utilities.Enumerators.AlignmentScoreType;
+import pt.uminho.ceb.biosystems.merlin.core.utilities.Enumerators.Method;
 import pt.uminho.ceb.biosystems.merlin.local.alignments.core.RunSimilaritySearch;
 import pt.uminho.ceb.biosystems.merlin.services.annotation.AnnotationEnzymesServices;
 import pt.uminho.ceb.biosystems.merlin.services.model.ModelEnzymesServices;
@@ -33,8 +35,6 @@ import pt.uminho.ceb.biosystems.merlin.services.model.ModelGenesServices;
 import pt.uminho.ceb.biosystems.merlin.services.model.ModelModuleServices;
 import pt.uminho.ceb.biosystems.merlin.services.model.ModelReactionsServices;
 import pt.uminho.ceb.biosystems.merlin.utilities.DatabaseProgressStatus;
-import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.AlignmentScoreType;
-import pt.uminho.ceb.biosystems.merlin.utilities.Enumerators.Method;
 import pt.uminho.ceb.biosystems.merlin.utilities.datastructures.map.MapUtils;
 
 /**
