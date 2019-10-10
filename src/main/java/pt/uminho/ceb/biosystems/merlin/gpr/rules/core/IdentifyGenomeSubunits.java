@@ -113,6 +113,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 				ConcurrentHashMap<String, Map<String, List<String>>> orthologsSequences = new ConcurrentHashMap<>();;
 				Map<String, String> kegg_taxonomy_ids = IdentifyGenomeSubunits.getKeggTaxonomyIDs();
 
+				
 				List<String> bypass =  ModelEnzymesServices.getECNumbersWithModules(databaseName);	
 				List<String> iterator = new ArrayList<>(this.ecNumbers.keySet());
 				iterator.removeAll(bypass);
