@@ -289,7 +289,6 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	 */
 	public static Map<String, ReactionsGPR_CI> runGPRsAssignment(String databaseName, double threshold) throws Exception {
 
-
 		return ModelReactionsServices.runGPRsAssignment(databaseName, threshold);
 	}
 
