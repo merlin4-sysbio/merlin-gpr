@@ -135,9 +135,9 @@ public class FilterModelReactions {
 				}
 			}
 		}
-
+		
 		List<String> reactions = this.getReactionsFromModel(this.workspaceName,isCompartentalised);
-
+		
 		for(String ec : gpr_map.keySet()) {
 
 			if(this.databaseEnzymesReactions.containsKey(ec)) {
