@@ -332,7 +332,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	 */
 	public static void setECNumberModuleProcessed(String databaseName, String ec_number) throws Exception {
 
-		ModelEnzymesServices.updateECNumberModuleStatus(databaseName, ec_number, DatabaseProgressStatus.PROCESSING.toString());
+		ModelEnzymesServices.updateECNumberModuleStatus(databaseName, ec_number, DatabaseProgressStatus.PROCESSED.toString());
 
 	}
 
