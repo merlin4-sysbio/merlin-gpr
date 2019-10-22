@@ -82,8 +82,9 @@ public class FilterModelReactions {
 
 		List<String> ret = new ArrayList<>();
 
-		List<Pair<Integer, String>> result = InitDataAccess.getInstance().getDatabaseService(databaseName).getReactionHasEnzyme(isCompartimentalised);
-		Pair<Integer, String> list;
+		List<Pair<String, String>> result = InitDataAccess.getInstance().getDatabaseService(databaseName).getReactionHasEnzyme(isCompartimentalised);
+		
+		Pair<String, String> list ;
 		
 		for(int i=0; i<result.size(); i++) {	
 			
@@ -91,9 +92,10 @@ public class FilterModelReactions {
 			
 			List<String> reactions = new ArrayList<>();
 
-			if(this.databaseEnzymesReactions.containsKey(String.valueOf(list.getB())));
+			if(this.databaseEnzymesReactions.containsKey(String.valueOf(list.getB()))) {
 				reactions = this.databaseEnzymesReactions.get(String.valueOf(list.getB()));
-
+			}
+			
 			reactions.add(String.valueOf(list.getA()));
 			ret.add(String.valueOf(list.getA()));
 
@@ -109,7 +111,7 @@ public class FilterModelReactions {
 	 * @param runGPRsAssignment
 	 * @throws Exception 
 	 */
-	public void filterReactions(Map<String, ReactionsGPR_CI> runGPRsAssignment, boolean isCompartentalised ) throws Exception {
+	public void filterReactions(Map<String, ReactionsGPR_CI> runGPRsAssignment) throws Exception {
 		
 		Map<String, Set<String>> gpr_map = new HashMap<>();
 		Set<String> ecs = new HashSet<>();
@@ -136,31 +138,28 @@ public class FilterModelReactions {
 			}
 		}
 		
-		List<String> reactions = this.getReactionsFromModel(this.workspaceName,isCompartentalised);
+		List<String> reactions = this.getReactionsFromModel(this.workspaceName,this.isCompartimentalised);
 		
 		for(String ec : gpr_map.keySet()) {
 
 			if(this.databaseEnzymesReactions.containsKey(ec)) {
 
-				List<String> r = this.databaseEnzymesReactions.get(ec);
+				List<String> react = this.databaseEnzymesReactions.get(ec);
 				List<String> r2 = new ArrayList<>();
-
-				for(String react : r) {
 
 					for(String gpr_react : gpr_map.get(ec)) {
 
 						if(react.contains(gpr_react)) {
 
-							r2.add(react);
-							kept.add(react);
-							this.annotations.put(react, this.annotations.get(gpr_react));
+							r2.add(gpr_react);
+							kept.add(gpr_react);
+							this.annotations.put(gpr_react, this.annotations.get(gpr_react));
 						}
 						else {
-
-							removed.add(react);
+							removed.add(gpr_react);
 						}
 					}
-				}
+				
 			}
 			else {
 
