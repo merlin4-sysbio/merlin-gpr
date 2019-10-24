@@ -123,6 +123,7 @@ public class FilterModelReactions {
 				ecs.add(key);
 
 				if(runGPRsAssignment.get(reaction).getProteins().get(key).isECnumberValid()) {
+					
 
 					this.annotations.put(reaction, runGPRsAssignment.get(reaction).getProteins().get(key).getGeneRule());
 

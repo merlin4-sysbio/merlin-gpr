@@ -174,7 +174,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 									e.printStackTrace();
 									result = new HashMap<String, List<ReactionProteinGeneAssociation>>();
 								}
-
+ 
 								genes_ko_modules = ModelModuleServices.loadModule(databaseName, result);
 
 								logger.info("Genes, KO, modules \t{}",genes_ko_modules);
