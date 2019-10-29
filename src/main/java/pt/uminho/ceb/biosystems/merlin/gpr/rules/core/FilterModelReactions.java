@@ -82,7 +82,7 @@ public class FilterModelReactions {
 
 		List<String> ret = new ArrayList<>();
 
-		List<Pair<String, String>> result = InitDataAccess.getInstance().getDatabaseService(databaseName).getReactionHasEnzyme(isCompartimentalised);
+		List<Pair<String, String>> result = ModelReactionsServices.getReactionHasEnzyme(databaseName, isCompartimentalised);
 		
 		Pair<String, String> list ;
 		
