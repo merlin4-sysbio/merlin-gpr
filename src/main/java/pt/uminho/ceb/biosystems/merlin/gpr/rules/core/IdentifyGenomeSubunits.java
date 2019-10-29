@@ -151,7 +151,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 										Set<String> sequenceID = sequenceIdsSet.get(ko);
 
 										if(sequenceID == null || sequenceID.isEmpty()) {
-
+											
 											seq.getOrthologs(ko);
 
 											for(String gene : this.closestOrtholog.get(ko))
@@ -250,7 +250,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 							e.printStackTrace();
 						}
 					}
-
+					
 					if(ret)
 						IdentifyGenomeSubunits.setECNumberModuleProcessed(databaseName, ec_number);
 
