@@ -113,7 +113,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 				ConcurrentHashMap<String, Map<String, List<String>>> orthologsSequences = new ConcurrentHashMap<>();;
 				Map<String, String> kegg_taxonomy_ids = IdentifyGenomeSubunits.getKeggTaxonomyIDs();
 
-				
+
 				List<String> bypass =  ModelEnzymesServices.getECNumbersWithModules(databaseName);	
 				List<String> iterator = new ArrayList<>(this.ecNumbers.keySet());
 				iterator.removeAll(bypass);
@@ -151,7 +151,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 										Set<String> sequenceID = sequenceIdsSet.get(ko);
 
 										if(sequenceID == null || sequenceID.isEmpty()) {
-											
+
 											seq.getOrthologs(ko);
 
 											for(String gene : this.closestOrtholog.get(ko))
@@ -174,24 +174,25 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 									e.printStackTrace();
 									result = new HashMap<String, List<ReactionProteinGeneAssociation>>();
 								}
- 
+
 								genes_ko_modules = ModelModuleServices.loadModule(databaseName, result);
 
 								logger.info("Genes, KO, modules \t{}",genes_ko_modules);
 
 								for(String ko : genes_ko_modules.keySet()) { 
-									
+
 									if(sequenceIdsSet != null) {
 
-									Set<String> sequenceID = sequenceIdsSet.get(ko);
+										Set<String> sequenceID = sequenceIdsSet.get(ko);
 
-									if(sequenceID == null || sequenceID.isEmpty()) {
+										if(sequenceID == null || sequenceID.isEmpty()) {
+											
+											seq.getOrthologs(ko);
 
-										seq.getOrthologs(ko);
+											for(String gene : this.closestOrtholog.get(ko))
+												orthologs.put(gene, this.sequences.get(gene));
 
-										for(String gene : this.closestOrtholog.get(ko))
-											orthologs.put(gene, this.sequences.get(gene));
-									}
+										}
 									}
 								}
 							}
@@ -250,7 +251,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 							e.printStackTrace();
 						}
 					}
-					
+
 					if(ret)
 						IdentifyGenomeSubunits.setECNumberModuleProcessed(databaseName, ec_number);
 
