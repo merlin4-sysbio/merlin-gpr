@@ -120,7 +120,7 @@ public class GetClosestOrhologSequence {
 				if(this.getMaxScore(score, maxScore)) {
 					
 					Map<String, List<String>> geneSequence = KeggAPI.getGenesByID(gene);
-
+					
 					if(geneSequence!=null) {
 
 						gene_id = new HashSet<>();
