@@ -1,0 +1,34 @@
+<plugin start="true">
+	<uid>pt.uminho.ceb.biosystems.merlin.gpr</uid>
+	<name>merlin-gpr</name>
+	<version>4.0.2</version>
+
+	<dependencies>
+		<dependency uid="merlin" />
+	</dependencies>
+
+	<extensions>
+
+		<extension uid="aibench.core"
+			name="aibench.core.operation-definition"
+			class="pt.uminho.ceb.biosystems.merlin.gpr.rules.operations.FindGenes">
+			<operation-description name="find genes"
+				path="" uid="operations.FindGenes.ID" />
+		</extension>
+
+		<extension uid="aibench.core"
+			name="aibench.core.operation-definition"
+			class="pt.uminho.ceb.biosystems.merlin.gpr.rules.operations.CreateGPRs">
+			<operation-description
+				name="gene-protein-reaction rules" path="30@model/10@create/"
+				uid="operations.Create_GPRs.ID" />
+		</extension>
+
+		<extension uid="aibench.workbench"
+			name="aibench.workbench.view">
+			<icon-operation operation="operations.Create_GPRs.ID"
+				icon="icons/Lifecycle/connection.png" />
+		</extension>
+
+	</extensions>
+</plugin>
