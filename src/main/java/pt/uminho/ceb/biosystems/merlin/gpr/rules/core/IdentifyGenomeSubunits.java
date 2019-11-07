@@ -9,6 +9,7 @@ import java.beans.PropertyChangeSupport;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -116,6 +117,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 				List<String> bypass =  ModelEnzymesServices.getECNumbersWithModules(databaseName);	
 				List<String> iterator = new ArrayList<>(this.ecNumbers.keySet());
+				
 				iterator.removeAll(bypass);
 
 				logger.info("Iterator size: {}, entries {}", iterator.size(), iterator);
@@ -129,6 +131,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 				this.changes.firePropertyChange("size", -1, iterator.size());
 
 				for(int i = 0; i<iterator.size(); i++) {
+					
 
 					String ec_number = iterator.get(i);
 
@@ -252,8 +255,15 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 						}
 					}
 
-					if(ret)
-						IdentifyGenomeSubunits.setECNumberModuleProcessed(databaseName, ec_number);
+					try {
+						
+						if(ret)
+							IdentifyGenomeSubunits.setECNumberModuleProcessed(databaseName, ec_number);
+						
+					} catch (Exception e) {
+						logger.info("error while creating ");
+						e.printStackTrace();
+					}
 
 					if(cancel.get())
 						i = iterator.size();
@@ -338,6 +348,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 	}
 
 	/**
+	 * 
 	 * @return the wsTaxonomyFolderPath
 	 */
 	public String getWsTaxonomyFolderPath() {
