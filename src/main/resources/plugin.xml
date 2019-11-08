@@ -1,7 +1,7 @@
 <plugin start="true">
 	<uid>pt.uminho.ceb.biosystems.merlin.gpr</uid>
 	<name>merlin-gpr</name>
-	<version>4.0.2</version>
+	<version>4.0.0</version>
 
 	<dependencies>
 		<dependency uid="merlin" />
