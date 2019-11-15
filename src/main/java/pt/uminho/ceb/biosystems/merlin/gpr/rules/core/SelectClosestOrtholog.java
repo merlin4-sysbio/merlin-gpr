@@ -90,8 +90,8 @@ public class SelectClosestOrtholog //implements Runnable
 				for(String tax_id : tax_ids) {
 
 					int score = -1;
-
-					if(ncbi_ids.containsKey(tax_id)) {
+				
+					if(tax_id != null && ncbi_ids != null && ncbi_ids.containsKey(tax_id)) {
 
 						String[] taxonomy = ncbi_ids.get(tax_id)[1].split(";");
 
