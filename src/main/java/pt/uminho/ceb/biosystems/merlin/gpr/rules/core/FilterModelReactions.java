@@ -1,7 +1,6 @@
 
 package pt.uminho.ceb.biosystems.merlin.gpr.rules.core;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionsGPR_CI;
-import pt.uminho.ceb.biosystems.merlin.dataAccess.InitDataAccess;
 import pt.uminho.ceb.biosystems.merlin.services.model.ModelReactionsServices;
 import pt.uminho.ceb.biosystems.mew.utilities.datastructures.pair.Pair;
 
