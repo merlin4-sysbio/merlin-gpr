@@ -127,7 +127,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 				GetClosestOrhologSequence seq = new GetClosestOrhologSequence(referenceTaxonomy, this.sequences, kegg_taxonomy_ids,
 						ncbi_taxonomy_ids, kegg_taxonomy_scores, this.closestOrtholog, orthologsSequences );
 
-				this.changes.firePropertyChange("size", -1, iterator.size());
+				this.changes.firePropertyChange("size", null, iterator.size());
 
 				for(int i = 0; i<iterator.size(); i++) {
 					
@@ -267,7 +267,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 					if(cancel.get())
 						i = iterator.size();
 					else
-						this.changes.firePropertyChange("sequencesCounter", i-1, i);
+						this.changes.firePropertyChange("sequencesCounter", null, i);
 				}
 			}
 		} 

@@ -135,8 +135,6 @@ public class CreateGPRs implements PropertyChangeListener {
 							FilterModelReactions f = new FilterModelReactions(this.project.getName(), this.isCompartimentalised);
 							f.filterReactions(ret);
 
-							//TODO export file with rules for analysis!!!
-							
 							if(this.integrateToDatabase && !this.cancel.get()) {
 
 								if(this.removeReactions)
