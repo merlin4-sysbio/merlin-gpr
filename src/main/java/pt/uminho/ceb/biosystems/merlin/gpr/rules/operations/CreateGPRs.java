@@ -236,7 +236,7 @@ public class CreateGPRs implements PropertyChangeListener {
 
 		if(project == null) {
 
-			throw new IllegalArgumentException("No ProjectGUISelected!");
+			throw new IllegalArgumentException("No ProjectGUI Selected!");
 		}
 		else {
 			//			String dbName = project.getName();
