@@ -29,10 +29,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import es.uvigo.ei.aibench.workbench.Workbench;
 import es.uvigo.ei.aibench.workbench.utilities.Utilities;
-import pt.uminho.ceb.biosystems.merlin.aibench.datatypes.model.ModelReactionsAIB;
-import pt.uminho.ceb.biosystems.merlin.aibench.utilities.CreateImageIcon;
-import pt.uminho.ceb.biosystems.merlin.aibench.utilities.LoadFromConf;
-import pt.uminho.ceb.biosystems.merlin.aibench.utilities.MerlinUtils;
+import pt.uminho.ceb.biosystems.merlin.gui.datatypes.model.ModelReactionsAIB;
+import pt.uminho.ceb.biosystems.merlin.gui.utilities.CreateImageIcon;
+import pt.uminho.ceb.biosystems.merlin.gui.utilities.LoadFromConf;
+import pt.uminho.ceb.biosystems.merlin.gui.utilities.MerlinUtils;
 import pt.uminho.ceb.biosystems.merlin.core.datatypes.WorkspaceDataTable;
 import pt.uminho.ceb.biosystems.merlin.core.datatypes.WorkspaceGenericDataTable;
 import pt.uminho.ceb.biosystems.merlin.core.utilities.Enumerators.SourceType;
