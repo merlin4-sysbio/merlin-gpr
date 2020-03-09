@@ -130,7 +130,6 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 				this.changes.firePropertyChange("size", null, iterator.size());
 
 				for(int i = 0; i<iterator.size(); i++) {
-					
 
 					String ec_number = iterator.get(i);
 
