@@ -199,7 +199,7 @@ public class FilterModelReactions {
 		this.no_gpr.removeAll(this.keptWithDifferentAnnotation);
 		this.removed.removeAll(this.no_gpr);
 
-		String s = "Removed\t"+removed.size()+"\t"+removed+
+		String s = "\nRemoved\t"+removed.size()+"\t"+removed+    // added \n in '\nRemoved\t'
 				"\nKept\t"+kept.size()+"\t"+kept+
 				"\nKept new annotation\t"+keptWithDifferentAnnotation.size()+"\t"+keptWithDifferentAnnotation+
 				"\nNo GPR\t"+no_gpr.size()+"\t"+no_gpr;
@@ -208,7 +208,7 @@ public class FilterModelReactions {
 		for(String r : this.annotations.keySet())
 			s+="reaction:\t"+r+"\t"+this.annotations.get(r)+"\n";
 
-		logger.info("Integration report: {}\nEnd Report.", s);
+		logger.info("\nIntegration report:\n{}\nEnd Report.", s);  // added \n in the beginning and in 'report:\n' and deleted space after
 		
 		
 		

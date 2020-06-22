@@ -101,15 +101,16 @@ public class CreateGPRs implements PropertyChangeListener {
 			else
 				this.method = Method.SmithWaterman;
 
-			
-			if(!this.method.equals(Method.Blast) || AlignmentsUtils.checkBlastInstalation()){
-
+			if(this.method.equals(Method.Blast) || AlignmentsUtils.checkBlastInstalation()){   // deleted '!' from !this.method.equals(Method.Blast)
+				
 				boolean identifiedWithoutErros = false;
 				if(!this.cancel.get()) {
 					
 					if(this.identifyGPRs && !this.cancel.get()) {
 
 						Map<String, List<String>> ec_numbers = ModelGenesServices.getGPRsECNumbers(this.project.getName(), this.isCompartimentalised);
+						System.out.println(ec_numbers);    // da vazio   
+						System.out.println(this.isCompartimentalised);  // false
 
 						IdentifyGenomeSubunits identifyGenomeSubunits = new IdentifyGenomeSubunits(ec_numbers, genome, reference_organism_id, similarity_threshold, 
 								referenceTaxonomyThreshold, this.method, compareToFullGenome);
@@ -123,19 +124,26 @@ public class CreateGPRs implements PropertyChangeListener {
 					}
 					
 				}
-				
+				System.out.println("\nentering...\n");
 				if(!this.cancel.get()) {
 					
 					if(!this.identifyGPRs || identifiedWithoutErros) {
 
 						if(this.generateGPRs && !this.cancel.get()) {
-
+							
+							System.out.println("i'm in!\n");
+							System.out.println(this.project.getName());
+							System.out.println(this.threshold);
+							
 							Map<String, ReactionsGPR_CI> ret = IdentifyGenomeSubunits.runGPRsAssignment(this.project.getName(),this.threshold);
-
-							FilterModelReactions f = new FilterModelReactions(this.project.getName(), this.isCompartimentalised);
+							System.out.println(ret);  // da vazio
+							
+							FilterModelReactions f = new FilterModelReactions(this.project.getName(), this.isCompartimentalised); 
 							f.filterReactions(ret);
+							
 
 							if(this.integrateToDatabase && !this.cancel.get()) {
+								System.out.println("i'm inside in!\n");
 
 								if(this.removeReactions)
 									f.removeReactionsFromModel(keepReactionsWithNotes, this.keepManualReactions);

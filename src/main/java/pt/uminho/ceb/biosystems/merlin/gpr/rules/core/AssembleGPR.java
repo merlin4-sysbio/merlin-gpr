@@ -40,7 +40,7 @@ public class AssembleGPR {
 	private List<String> reactionsEnzymes;
 	private boolean isPartialECnumber;
 
-	//TODO vero que fazer com o menos!!! \\+ \\-
+	//TODO ver o que fazer com o menos!!! \\+ \\-
 
 	/**
 	 * @param ec_number

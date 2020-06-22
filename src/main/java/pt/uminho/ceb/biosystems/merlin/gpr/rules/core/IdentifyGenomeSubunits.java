@@ -144,7 +144,7 @@ public class IdentifyGenomeSubunits implements PropertyChangeListener {
 
 							if(gapsIdentification) {
 
-								List<String> kos =	AssembleGPR.getOrthologsByECnumber(ec_number);
+								List<String> kos = AssembleGPR.getOrthologsByECnumber(ec_number);
 
 								for(String ko : kos) {
 
