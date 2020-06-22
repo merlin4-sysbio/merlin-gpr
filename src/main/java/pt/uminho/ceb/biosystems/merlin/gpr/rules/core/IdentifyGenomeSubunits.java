@@ -21,6 +21,7 @@ import org.biojava.nbio.core.sequence.template.AbstractSequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pt.uminho.ceb.biosystems.merlin.alignments.core.RunSimilaritySearch;
 import pt.uminho.ceb.biosystems.merlin.bioapis.externalAPI.kegg.KeggAPI;
 import pt.uminho.ceb.biosystems.merlin.bioapis.externalAPI.ncbi.NcbiAPI;
 import pt.uminho.ceb.biosystems.merlin.core.containers.alignment.AlignmentContainer;
@@ -28,7 +29,6 @@ import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionProteinGeneAs
 import pt.uminho.ceb.biosystems.merlin.core.containers.gpr.ReactionsGPR_CI;
 import pt.uminho.ceb.biosystems.merlin.core.utilities.Enumerators.AlignmentScoreType;
 import pt.uminho.ceb.biosystems.merlin.core.utilities.Enumerators.Method;
-import pt.uminho.ceb.biosystems.merlin.local.alignments.core.RunSimilaritySearch;
 import pt.uminho.ceb.biosystems.merlin.services.annotation.AnnotationEnzymesServices;
 import pt.uminho.ceb.biosystems.merlin.services.model.ModelEnzymesServices;
 import pt.uminho.ceb.biosystems.merlin.services.model.ModelGenesServices;
